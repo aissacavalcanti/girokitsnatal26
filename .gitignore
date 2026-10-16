@@ -1,0 +1,13 @@
+# Byte-compiled
+__pycache__/
+*.py[cod]
+.Python
+.venv/
+venv/
+.env
+.streamlit/secrets.toml
+*.xlsx
+!~data/exemplo/
+data/ultima/*
+!data/ultima/.gitkeep
+.DS_Store

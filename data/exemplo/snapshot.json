@@ -1,0 +1,176 @@
+{
+  "ref_date": "2026-09-22",
+  "summary": {
+    "vendida": 17803.0,
+    "estoque": 119402.0,
+    "disponivel": 137205.0,
+    "giro": 0.1298,
+    "faturamento": 1594597.96,
+    "skus": 43,
+    "lojas": 41,
+    "pracas": 8
+  },
+  "praca": [
+    {
+      "praca": "OMA",
+      "vendida": 4785,
+      "estoque": 11115,
+      "giro_pct": 30.1,
+      "fat": 447012.25
+    },
+    {
+      "praca": "RN SUL",
+      "vendida": 799,
+      "estoque": 4111,
+      "giro_pct": 16.3,
+      "fat": 72646.38
+    },
+    {
+      "praca": "LITORAL",
+      "vendida": 1166,
+      "estoque": 6396,
+      "giro_pct": 15.4,
+      "fat": 103506.01
+    },
+    {
+      "praca": "OCE",
+      "vendida": 2223,
+      "estoque": 12861,
+      "giro_pct": 14.7,
+      "fat": 202616.78
+    },
+    {
+      "praca": "NATAL",
+      "vendida": 4562,
+      "estoque": 29383,
+      "giro_pct": 13.4,
+      "fat": 388902.53
+    },
+    {
+      "praca": "MOSSORÓ",
+      "vendida": 1231,
+      "estoque": 9687,
+      "giro_pct": 11.3,
+      "fat": 104978.17
+    },
+    {
+      "praca": "PARAÍBA",
+      "vendida": 1297,
+      "estoque": 12902,
+      "giro_pct": 9.1,
+      "fat": 110485.82
+    },
+    {
+      "praca": "SÃO LUÍS",
+      "vendida": 1740,
+      "estoque": 32947,
+      "giro_pct": 5.0,
+      "fat": 164450.02
+    }
+  ],
+  "canal": [
+    {
+      "canal": "Híbrida",
+      "vendida": 8133,
+      "estoque": 28190,
+      "giro_pct": 22.4,
+      "fat": 744194.48
+    },
+    {
+      "canal": "Venda Direta",
+      "vendida": 7175,
+      "estoque": 64772,
+      "giro_pct": 10.0,
+      "fat": 627297.13
+    },
+    {
+      "canal": "HUB",
+      "vendida": 2495,
+      "estoque": 26440,
+      "giro_pct": 8.6,
+      "fat": 223106.35
+    }
+  ],
+  "top": [
+    {
+      "desc": "ESTJ ZAAD NAT/26",
+      "vendida": 97,
+      "estoque": 262,
+      "giro_pct": 27.0
+    },
+    {
+      "desc": "ESTJ MALBEC MAGNETIC NAT/26",
+      "vendida": 844,
+      "estoque": 2384,
+      "giro_pct": 26.1
+    },
+    {
+      "desc": "ESTJ FLORATTA RED NAT/26",
+      "vendida": 656,
+      "estoque": 1862,
+      "giro_pct": 26.1
+    },
+    {
+      "desc": "ESTJ LILY ACETINADOS NAT/26",
+      "vendida": 363,
+      "estoque": 1054,
+      "giro_pct": 25.6
+    },
+    {
+      "desc": "ESTJ MALBEC EDP NAT/26",
+      "vendida": 174,
+      "estoque": 561,
+      "giro_pct": 23.7
+    },
+    {
+      "desc": "ESTJ CBEM PESSEGURA NAT/26",
+      "vendida": 973,
+      "estoque": 3281,
+      "giro_pct": 22.9
+    },
+    {
+      "desc": "ESTJ FLORATTA RED PASSION NAT/26",
+      "vendida": 455,
+      "estoque": 1611,
+      "giro_pct": 22.0
+    },
+    {
+      "desc": "ESTJ FLORATTA RED P1 NAT/26",
+      "vendida": 1295,
+      "estoque": 4707,
+      "giro_pct": 21.6
+    }
+  ],
+  "bottom": [
+    {
+      "desc": "ESTJ NIINA SECRETS MAKE NAT/26",
+      "vendida": 10,
+      "estoque": 165,
+      "giro_pct": 5.7
+    },
+    {
+      "desc": "ESTJ NSPA UVA MERLOT NAT/26",
+      "vendida": 290,
+      "estoque": 5623,
+      "giro_pct": 4.9
+    },
+    {
+      "desc": "ESTJ INSTANCE BAUNILHA GLOW NAT/26",
+      "vendida": 336,
+      "estoque": 7265,
+      "giro_pct": 4.4
+    },
+    {
+      "desc": "ESTJ MAGNIFIC ROUGE CAMELIA NAT/26",
+      "vendida": 105,
+      "estoque": 2717,
+      "giro_pct": 3.7
+    },
+    {
+      "desc": "ESTJ SIAGE NUTRI ROSE NAT/26",
+      "vendida": 74,
+      "estoque": 2992,
+      "giro_pct": 2.4
+    }
+  ]
+}

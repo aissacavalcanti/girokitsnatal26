@@ -1,0 +1,24 @@
+[server]
+# Só neste PC — não expõe na rede
+address = "127.0.0.1"
+port = 8501
+headless = true
+enableCORS = true
+enableXsrfProtection = true
+fileWatcherType = "auto"
+
+[browser]
+gatherUsageStats = false
+serverAddress = "127.0.0.1"
+
+[client]
+toolbarMode = "minimal"
+showErrorDetails = true
+
+[theme]
+base = "dark"
+primaryColor = "#00E59A"
+backgroundColor = "#0B1120"
+secondaryBackgroundColor = "#1E293B"
+textColor = "#F1F5F9"
+font = "sans serif"
