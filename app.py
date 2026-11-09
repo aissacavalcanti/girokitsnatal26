@@ -64,7 +64,7 @@ PLOTLY_COLORS = [
 ]
 
 st.set_page_config(
-    page_title="StockBridge · Giro",
+    page_title="Giro de Kits Natal",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -445,10 +445,41 @@ def fmt_money_short(x: float) -> str:
     return fmt_money(x)
 
 
+def texto_ultima_atualizacao() -> str:
+    """Data/hora da base mais recente (local ou snapshot publicado)."""
+    meta = ler_meta_ultima()
+    origem = "neste PC"
+    if not meta.get("atualizado_em") and publicada_disponivel():
+        meta = ler_meta(META_PUBLICADA)
+        origem = "snapshot publicado"
+    if not meta.get("atualizado_em"):
+        return "Última atualização de dados: ainda não carregada — use a aba Dados."
+    return f"Última atualização de dados: {formatar_data_meta(meta)} ({origem})"
+
+
+ALERTA_LABELS = {
+    "risco_sobra_alto": "Risco sobra alto",
+    "risco_sobra_moderado": "Risco sobra moderado",
+    "giro_saudavel": "Giro saudável",
+    "ruptura": "Ruptura",
+    # legado (antes da nova cadência)
+    "alto_giro": "Giro saudável",
+    "estoque_parado": "Risco sobra alto",
+    "normal": "Giro saudável",
+}
+
+
+def rotular_alertas(df: pd.DataFrame) -> pd.DataFrame:
+    out = df.copy()
+    if "alerta" in out.columns:
+        out["alerta"] = out["alerta"].map(lambda a: ALERTA_LABELS.get(str(a), str(a)))
+    return out
+
+
 def render_header() -> None:
     st.markdown('<div class="sb-brand">Gentil Negócios</div>', unsafe_allow_html=True)
     st.markdown(
-        """
+        f"""
         <div class="sb-header">
           <div class="sb-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -457,13 +488,16 @@ def render_header() -> None:
             </svg>
           </div>
           <div>
-            <p class="sb-eyebrow">MVP · Inteligência de Estoque</p>
-            <h1 class="sb-title">Stock<span>Bridge</span> · Giro</h1>
+            <p class="sb-eyebrow">Campanha Natal · Inteligência de Estoque</p>
+            <h1 class="sb-title">Giro de Kits <span>Natal</span></h1>
           </div>
         </div>
         <p class="sb-tagline">
-          Análise de giro de kits, lançamentos e itens promocionados.
+          Análise de giro de kits da campanha de Natal.
           Distribuição por loja e praça. Decisão baseada em dados.
+        </p>
+        <p class="sb-tagline" style="margin-top:0.35rem;color:{SB["green"]};font-weight:600;">
+          {texto_ultima_atualizacao()}
         </p>
         """,
         unsafe_allow_html=True,
@@ -693,7 +727,7 @@ def exigir_senha() -> bool:
         <div class="sb-header">
           <div>
             <div class="sb-kicker">ACESSO RESTRITO · GENTIL NEGÓCIOS</div>
-            <h1 class="sb-title">StockBridge · Giro</h1>
+            <h1 class="sb-title">Giro de Kits Natal</h1>
             <p class="sb-sub">Digite a senha da equipe para abrir o painel.</p>
           </div>
         </div>
@@ -1022,8 +1056,10 @@ def show_table(
         "faturamento": "Faturamento",
         "preco_venda": "Preço de venda",
         "valor_estoque": "Valor estoque",
+        "potencial_venda": "Potencial de venda",
         "Preço de venda": "Preço de venda",
         "Valor estoque": "Valor estoque",
+        "Potencial de venda": "Potencial de venda",
     }
     for col in money_cols:
         show[col] = pd.to_numeric(show[col], errors="coerce")
@@ -1123,17 +1159,88 @@ def tab_visao_geral(filtered: pd.DataFrame) -> None:
         fig4.update_traces(textposition="inside", textinfo="percent+label", hole=0.45)
         st.plotly_chart(plotly_layout(fig4, 320), use_container_width=True)
 
+    st.markdown('<p class="sb-section-title">Potencial de venda em estoque por praça</p>', unsafe_allow_html=True)
+    st.caption(
+        "Potencial = quantidade em estoque × preço de venda do kit. "
+        "É o faturamento possível se todo o estoque atual for vendido."
+    )
+    base_pot = filtered.copy()
+    if "preco_venda" not in base_pot.columns:
+        base_pot["preco_venda"] = 0.0
+    base_pot["potencial_venda"] = (
+        pd.to_numeric(base_pot["estoque"], errors="coerce").fillna(0.0)
+        * pd.to_numeric(base_pot["preco_venda"], errors="coerce").fillna(0.0)
+    )
+    pot_praca = (
+        base_pot.groupby("praca", as_index=False)
+        .agg(
+            estoque=("estoque", "sum"),
+            skus=("codigo", "nunique"),
+            potencial_venda=("potencial_venda", "sum"),
+        )
+        .sort_values("potencial_venda", ascending=False)
+        .reset_index(drop=True)
+    )
+    total_pot = float(pot_praca["potencial_venda"].sum())
+    pot_praca["participacao"] = pot_praca["potencial_venda"] / total_pot if total_pot > 0 else 0.0
+
+    k1, k2 = st.columns(2)
+    with k1:
+        st.metric("Potencial total em estoque", fmt_money(total_pot))
+    with k2:
+        st.metric("Unidades em estoque", f"{pot_praca['estoque'].sum():,.0f}".replace(",", "."))
+
+    c_chart, c_table = st.columns([1.2, 1])
+    with c_chart:
+        fig_pot = px.bar(
+            pot_praca,
+            x="praca",
+            y="potencial_venda",
+            title="Potencial de venda (R$) por praça",
+            text=pot_praca["potencial_venda"].map(lambda x: fmt_money_short(float(x))),
+            labels={"praca": "Praça", "potencial_venda": "Potencial de venda (R$)"},
+            color_discrete_sequence=[SB["green"]],
+        )
+        fig_pot.update_traces(textposition="outside", marker_line_width=0)
+        fig_pot.update_layout(showlegend=False, yaxis_title="R$")
+        st.plotly_chart(plotly_layout(fig_pot, 360), use_container_width=True)
+    with c_table:
+        show_table(
+            pot_praca.rename(
+                columns={
+                    "praca": "Praça",
+                    "estoque": "Quantidade",
+                    "skus": "SKUs",
+                    "potencial_venda": "Potencial de venda",
+                    "participacao": "Participação",
+                }
+            ),
+            money_cols=["Potencial de venda"],
+            pct_cols=["Participação"],
+            height=360,
+        )
+
     st.markdown('<p class="sb-section-title">Alertas de produto</p>', unsafe_allow_html=True)
-    st.caption("Cadência: &lt; 55% sobra alta · até 75% sobra moderada · acima de 75% giro saudável")
-    counts = alertas["alerta"].value_counts()
+    st.caption("Cadência: < 55% sobra alta · até 75% sobra moderada · acima de 75% giro saudável")
+    # Normaliza legado (alto_giro / estoque_parado) caso o processo ainda tenha cache antigo
+    alerta_norm = alertas["alerta"].replace(
+        {
+            "alto_giro": "giro_saudavel",
+            "normal": "giro_saudavel",
+            "estoque_parado": "risco_sobra_alto",
+        }
+    )
+    counts = alerta_norm.value_counts()
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Risco sobra alto", int(counts.get("risco_sobra_alto", 0)))
     c2.metric("Risco sobra moderado", int(counts.get("risco_sobra_moderado", 0)))
     c3.metric("Giro saudável", int(counts.get("giro_saudavel", 0)))
     c4.metric("Ruptura", int(counts.get("ruptura", 0)))
 
+    tabela_alertas = rotular_alertas(alertas)
+    tabela_alertas["alerta"] = alerta_norm.map(ALERTA_LABELS).fillna(tabela_alertas["alerta"])
     show_table(
-        alertas[["alerta", "tipo", "codigo", "descricao", "vendida", "estoque", "giro", "faturamento"]],
+        tabela_alertas[["alerta", "tipo", "codigo", "descricao", "vendida", "estoque", "giro", "faturamento"]],
         money_cols=["faturamento"],
         pct_cols=["giro"],
         height=360,
