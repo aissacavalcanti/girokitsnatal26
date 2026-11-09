@@ -124,6 +124,10 @@ def load_estoque(path: FileInput, tipo: str = "kit") -> pd.DataFrame:
     col_cod = _find_column(df, ["codigo", "cod"])
     col_desc = _find_column(df, ["descricao", "desc"])
     col_est = _find_column(df, ["estoque", "saldo", "qtd"])
+    try:
+        col_venda = _find_column(df, ["venda", "preco venda", "preco de venda", "pv"])
+    except KeyError:
+        col_venda = None
 
     out = pd.DataFrame(
         {
@@ -132,6 +136,7 @@ def load_estoque(path: FileInput, tipo: str = "kit") -> pd.DataFrame:
             "codigo": df[col_cod].map(normalize_product_code),
             "descricao": df[col_desc].astype(str).str.strip(),
             "estoque": df[col_est].map(parse_br_number),
+            "preco_venda": df[col_venda].map(parse_br_number) if col_venda else 0.0,
             "tipo": tipo,
         }
     )

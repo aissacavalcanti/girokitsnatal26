@@ -26,7 +26,9 @@ ROOT = Path(__file__).resolve().parent
 DATA = ROOT / "data"
 EXEMPLO = DATA / "exemplo"
 ULTIMA = DATA / "ultima"
+PUBLICADA = DATA / "publicada"
 META_ULTIMA = ULTIMA / "meta.json"
+META_PUBLICADA = PUBLICADA / "meta.json"
 
 # --- StockBridge palette (alto contraste) ---
 SB = {
@@ -654,17 +656,59 @@ def _write_upload(file_obj, dest: Path) -> None:
         file_obj.seek(0)
 
 
-def ler_meta_ultima() -> dict:
-    if not META_ULTIMA.exists():
+def ler_meta(path: Path) -> dict:
+    if not path.exists():
         return {}
     try:
-        return json.loads(META_ULTIMA.read_text(encoding="utf-8"))
+        return json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return {}
 
 
+def ler_meta_ultima() -> dict:
+    return ler_meta(META_ULTIMA)
+
+
 def ultima_disponivel() -> bool:
     return (ULTIMA / "vendas.csv").exists() and (ULTIMA / "estoque.csv").exists()
+
+
+def publicada_disponivel() -> bool:
+    return (PUBLICADA / "vendas.csv").exists() and (PUBLICADA / "estoque.csv").exists()
+
+
+def exigir_senha() -> bool:
+    """Bloqueia o dash se APP_PASSWORD estiver em secrets (Streamlit Cloud / local)."""
+    try:
+        senha_ok = str(st.secrets.get("APP_PASSWORD", "")).strip()
+    except Exception:
+        senha_ok = ""
+    if not senha_ok:
+        return True
+    if st.session_state.get("autenticado"):
+        return True
+
+    st.markdown(
+        f"""
+        <div class="sb-header">
+          <div>
+            <div class="sb-kicker">ACESSO RESTRITO · GENTIL NEGÓCIOS</div>
+            <h1 class="sb-title">StockBridge · Giro</h1>
+            <p class="sb-sub">Digite a senha da equipe para abrir o painel.</p>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    with st.form("login_form"):
+        senha = st.text_input("Senha", type="password")
+        entrar = st.form_submit_button("Entrar", type="primary")
+    if entrar:
+        if senha == senha_ok:
+            st.session_state["autenticado"] = True
+            st.rerun()
+        st.error("Senha incorreta.")
+    return False
 
 
 def salvar_ultima(f_vendas, f_estoque, f_dcentro=None, f_class=None, tipo_default: str = "kit") -> dict:
@@ -700,22 +744,30 @@ def salvar_ultima(f_vendas, f_estoque, f_dcentro=None, f_class=None, tipo_defaul
     return meta
 
 
-def carregar_ultima(tipo_default: str):
-    vendas = load_vendas(ULTIMA / "vendas.csv", tipo=tipo_default)
-    estoque = load_estoque(ULTIMA / "estoque.csv", tipo=tipo_default)
+def carregar_pasta_bases(pasta: Path, tipo_default: str):
+    vendas = load_vendas(pasta / "vendas.csv", tipo=tipo_default)
+    estoque = load_estoque(pasta / "estoque.csv", tipo=tipo_default)
 
-    if (ULTIMA / "dcentro.xlsx").exists():
-        dcentro = load_dcentro(ULTIMA / "dcentro.xlsx")
-    elif (ULTIMA / "dcentro.csv").exists():
-        dcentro = load_dcentro(ULTIMA / "dcentro.csv")
+    if (pasta / "dcentro.xlsx").exists():
+        dcentro = load_dcentro(pasta / "dcentro.xlsx")
+    elif (pasta / "dcentro.csv").exists():
+        dcentro = load_dcentro(pasta / "dcentro.csv")
     else:
         dcentro = load_dcentro(DATA / "dcentros.csv")
 
     classificacao = None
-    if (ULTIMA / "classificacao.csv").exists():
-        classificacao = load_classificacao_produtos(ULTIMA / "classificacao.csv")
+    if (pasta / "classificacao.csv").exists():
+        classificacao = load_classificacao_produtos(pasta / "classificacao.csv")
 
     return vendas, estoque, dcentro, classificacao
+
+
+def carregar_ultima(tipo_default: str):
+    return carregar_pasta_bases(ULTIMA, tipo_default)
+
+
+def carregar_publicada(tipo_default: str):
+    return carregar_pasta_bases(PUBLICADA, tipo_default)
 
 
 def formatar_data_meta(meta: dict) -> str:
@@ -729,18 +781,29 @@ def formatar_data_meta(meta: dict) -> str:
 
 
 def load_data_panel():
-    """Upload / última salva / exemplo — persiste em data/ultima/."""
+    """Upload / última salva / publicada / exemplo — persiste em data/ultima/."""
     st.markdown('<p class="sb-section-title">Carregar bases</p>', unsafe_allow_html=True)
-    st.caption("Ao enviar ABC + Saldo, a base fica salva neste PC e reabre automaticamente na próxima vez.")
+    st.caption(
+        "Ao enviar ABC + Saldo, a base fica salva neste PC. "
+        "Para o dash compartilhado, rode preparar_publicacao.bat e faça push no GitHub."
+    )
 
     meta = ler_meta_ultima()
+    meta_pub = ler_meta(META_PUBLICADA)
     tem_ultima = ultima_disponivel()
+    tem_publicada = publicada_disponivel()
 
     if tem_ultima:
         st.markdown(
             f'<span class="sb-chip">salva</span> '
             f'<span style="color:{SB["green"]}">Última atualização: {formatar_data_meta(meta)}</span>'
             f'<span style="color:{SB["gray_2"]}"> · {meta.get("nome_vendas", "vendas")} + {meta.get("nome_estoque", "estoque")}</span>',
+            unsafe_allow_html=True,
+        )
+    elif tem_publicada:
+        st.markdown(
+            f'<span class="sb-chip">publicada</span> '
+            f'<span style="color:{SB["green"]}">Snapshot compartilhado: {formatar_data_meta(meta_pub)}</span>',
             unsafe_allow_html=True,
         )
 
@@ -779,9 +842,9 @@ def load_data_panel():
 
     col_a, col_b = st.columns(2)
     with col_a:
-        if tem_ultima:
+        if tem_ultima or tem_publicada:
             forcar_exemplo = st.toggle(
-                "Usar exemplo (ignora a base salva)",
+                "Usar exemplo (ignora a base salva/publicada)",
                 value=False,
                 key="usar_exemplo",
             )
@@ -820,6 +883,16 @@ def load_data_panel():
             f'<span class="sb-chip">salva</span> '
             f'<span style="color:{SB["green"]}">'
             f"Carregando última atualização ({formatar_data_meta(meta)}) · "
+            f"{len(vendas):,} vendas · {len(estoque):,} estoque"
+            f"</span>".replace(",", "."),
+            unsafe_allow_html=True,
+        )
+    elif tem_publicada and not forcar_exemplo:
+        vendas, estoque, dcentro, classificacao = carregar_publicada(tipo_default)
+        st.markdown(
+            f'<span class="sb-chip">publicada</span> '
+            f'<span style="color:{SB["green"]}">'
+            f"Carregando snapshot compartilhado ({formatar_data_meta(meta_pub)}) · "
             f"{len(vendas):,} vendas · {len(estoque):,} estoque"
             f"</span>".replace(",", "."),
             unsafe_allow_html=True,
@@ -934,7 +1007,7 @@ def show_table(
     pct_cols = [c for c in (pct_cols or []) if c in df.columns]
     int_cols = [
         c
-        for c in ["vendida", "estoque", "disponivel", "skus", "lojas"]
+        for c in ["vendida", "estoque", "disponivel", "skus", "lojas", "Quantidade"]
         if c in df.columns and c not in money_cols and c not in pct_cols
     ]
     show = df.copy()
@@ -945,19 +1018,30 @@ def show_table(
         show[col] = pd.to_numeric(show[col], errors="coerce") * 100.0
         config[col] = st.column_config.NumberColumn(col, format="%.1f%%")
 
+    money_labels = {
+        "faturamento": "Faturamento",
+        "preco_venda": "Preço de venda",
+        "valor_estoque": "Valor estoque",
+        "Preço de venda": "Preço de venda",
+        "Valor estoque": "Valor estoque",
+    }
     for col in money_cols:
         show[col] = pd.to_numeric(show[col], errors="coerce")
         config[col] = st.column_config.NumberColumn(
-            "Faturamento" if col == "faturamento" else col.replace("_", " ").title(),
+            money_labels.get(col, col.replace("_", " ").title()),
             help="Valores em reais (R$)",
             width="medium",
         )
         formatters[col] = lambda x: fmt_money(float(x)) if pd.notna(x) else "—"
 
+    int_labels = {
+        "disponivel": "Estoque Atendido",
+        "Quantidade": "Quantidade",
+    }
     for col in int_cols:
         show[col] = pd.to_numeric(show[col], errors="coerce")
         # Sem format= no NumberColumn — o Styler aplica 1.234
-        rotulo = "Estoque Atendido" if col == "disponivel" else col
+        rotulo = int_labels.get(col, col)
         config[col] = st.column_config.NumberColumn(rotulo)
         formatters[col] = lambda x: fmt_int(float(x)) if pd.notna(x) else "—"
 
@@ -1040,12 +1124,13 @@ def tab_visao_geral(filtered: pd.DataFrame) -> None:
         st.plotly_chart(plotly_layout(fig4, 320), use_container_width=True)
 
     st.markdown('<p class="sb-section-title">Alertas de produto</p>', unsafe_allow_html=True)
+    st.caption("Cadência: &lt; 55% sobra alta · até 75% sobra moderada · acima de 75% giro saudável")
     counts = alertas["alerta"].value_counts()
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Alto giro", int(counts.get("alto_giro", 0)))
-    c2.metric("Estoque parado", int(counts.get("estoque_parado", 0)))
-    c3.metric("Ruptura", int(counts.get("ruptura", 0)))
-    c4.metric("Normal", int(counts.get("normal", 0)))
+    c1.metric("Risco sobra alto", int(counts.get("risco_sobra_alto", 0)))
+    c2.metric("Risco sobra moderado", int(counts.get("risco_sobra_moderado", 0)))
+    c3.metric("Giro saudável", int(counts.get("giro_saudavel", 0)))
+    c4.metric("Ruptura", int(counts.get("ruptura", 0)))
 
     show_table(
         alertas[["alerta", "tipo", "codigo", "descricao", "vendida", "estoque", "giro", "faturamento"]],
@@ -1472,6 +1557,174 @@ def tab_canais(filtered: pd.DataFrame) -> None:
     )
 
 
+def faixa_preco_p1_p5(precos: pd.Series) -> tuple[pd.Series, pd.DataFrame]:
+    """Segmenta preços em 5 faixas: P1 (mais baratos) … P5 (mais caros).
+
+    Usa quintis sobre os preços únicos de SKU (> 0). Retorna a série de
+    faixas alinhada a `precos` e um resumo com intervalo de cada Pn.
+    """
+    labels = ["P1", "P2", "P3", "P4", "P5"]
+    out = pd.Series("Sem preço", index=precos.index, dtype=object)
+    valid = pd.to_numeric(precos, errors="coerce").fillna(0.0)
+    mask = valid > 0
+    if not mask.any():
+        resumo = pd.DataFrame(columns=["faixa", "preco_min", "preco_max", "skus"])
+        return out, resumo
+
+    unicos = valid.loc[mask].drop_duplicates().sort_values()
+    n_bins = min(5, unicos.nunique())
+    if n_bins < 2:
+        out.loc[mask] = "P1"
+        resumo = pd.DataFrame(
+            [{"faixa": "P1", "preco_min": float(unicos.min()), "preco_max": float(unicos.max()), "skus": int(mask.sum())}]
+        )
+        return out, resumo
+
+    try:
+        faixas_unicos = pd.qcut(unicos, q=n_bins, labels=labels[:n_bins], duplicates="drop")
+    except ValueError:
+        faixas_unicos = pd.cut(unicos, bins=n_bins, labels=labels[:n_bins], include_lowest=True)
+
+    mapa = dict(zip(unicos.values, faixas_unicos.astype(str).values))
+    out.loc[mask] = valid.loc[mask].map(mapa).fillna("Sem preço")
+
+    resumo_rows = []
+    for faixa in labels[:n_bins]:
+        precos_f = unicos[faixas_unicos.astype(str) == faixa]
+        if precos_f.empty:
+            continue
+        resumo_rows.append(
+            {
+                "faixa": faixa,
+                "preco_min": float(precos_f.min()),
+                "preco_max": float(precos_f.max()),
+                "skus": int((out == faixa).sum()),
+            }
+        )
+    return out, pd.DataFrame(resumo_rows)
+
+
+def tab_estoque(filtered: pd.DataFrame) -> None:
+    """Base de estoque: loja, quantidade, SKU, descrição e preço de venda."""
+    st.markdown('<p class="sb-section-title">Base de estoque</p>', unsafe_allow_html=True)
+    st.caption(
+        "Estoque por loja e SKU, com descrição e preço de venda da base de saldo. "
+        "Faixas P1–P5: P1 = kits mais baratos, P5 = mais caros (quintis por preço de SKU). "
+        "Respeita os filtros da aba Dados."
+    )
+
+    show = filtered.copy()
+    if "preco_venda" not in show.columns:
+        show["preco_venda"] = 0.0
+
+    # Faixa calculada por SKU (um preço por código), depois aplicada às linhas loja×SKU
+    sku_preco = (
+        show.groupby("codigo", as_index=False)["preco_venda"]
+        .max()
+        .rename(columns={"preco_venda": "preco_sku"})
+    )
+    faixas_sku, resumo_faixas = faixa_preco_p1_p5(sku_preco["preco_sku"])
+    sku_preco["faixa"] = faixas_sku.values
+    show = show.merge(sku_preco[["codigo", "faixa"]], on="codigo", how="left")
+    show["faixa"] = show["faixa"].fillna("Sem preço")
+
+    c1, c2, c3 = st.columns([1, 1.4, 1.6])
+    with c1:
+        so_com_estoque = st.toggle("Somente com estoque > 0", value=True, key="estoque_so_positivo")
+    with c2:
+        opcoes_faixa = ["P1", "P2", "P3", "P4", "P5"]
+        if (show["faixa"] == "Sem preço").any():
+            opcoes_faixa = opcoes_faixa + ["Sem preço"]
+        faixas_sel = st.multiselect(
+            "Faixa de preço",
+            options=opcoes_faixa,
+            default=["P1", "P2", "P3", "P4", "P5"],
+            key="estoque_faixas",
+            help="P1 = mais baratos · P5 = mais caros",
+        )
+    with c3:
+        busca = st.text_input(
+            "Buscar SKU ou descrição",
+            value="",
+            placeholder="Ex.: 94133 ou ZAAD",
+            key="estoque_busca",
+        )
+
+    if so_com_estoque:
+        show = show[show["estoque"] > 0]
+    if faixas_sel:
+        show = show[show["faixa"].isin(faixas_sel)]
+    if busca.strip():
+        q = busca.strip().lower()
+        show = show[
+            show["codigo"].astype(str).str.lower().str.contains(q, na=False)
+            | show["descricao"].astype(str).str.lower().str.contains(q, na=False)
+            | show["loja"].astype(str).str.lower().str.contains(q, na=False)
+        ]
+
+    show["valor_estoque"] = show["estoque"] * show["preco_venda"]
+
+    if not resumo_faixas.empty:
+        legend = " · ".join(
+            f"**{r.faixa}** {fmt_money(r.preco_min)}–{fmt_money(r.preco_max)}"
+            for r in resumo_faixas.itertuples()
+        )
+        st.caption(f"Intervalos atuais: {legend}")
+
+    cols = ["faixa", "loja", "codigo", "descricao", "estoque", "preco_venda", "valor_estoque", "praca", "canal"]
+    cols = [c for c in cols if c in show.columns]
+    show = show[cols].sort_values(["faixa", "loja", "codigo"]).reset_index(drop=True)
+    show = show.rename(
+        columns={
+            "faixa": "Faixa",
+            "loja": "Loja",
+            "codigo": "SKU",
+            "descricao": "Descrição",
+            "estoque": "Quantidade",
+            "preco_venda": "Preço de venda",
+            "valor_estoque": "Valor estoque",
+            "praca": "Praça",
+            "canal": "Canal",
+        }
+    )
+
+    k1, k2, k3 = st.columns(3)
+    with k1:
+        st.metric("Linhas", f"{len(show):,}".replace(",", "."))
+    with k2:
+        st.metric("Quantidade total", f"{show['Quantidade'].sum():,.0f}".replace(",", "."))
+    with k3:
+        total_valor = float(show["Valor estoque"].sum()) if "Valor estoque" in show.columns else 0.0
+        st.metric("Valor em estoque", fmt_money(total_valor))
+
+    if not show.empty and "Faixa" in show.columns:
+        por_faixa = (
+            show.groupby("Faixa", as_index=False)
+            .agg(
+                SKUs=("SKU", "nunique"),
+                Quantidade=("Quantidade", "sum"),
+                **{"Valor estoque": ("Valor estoque", "sum")},
+            )
+        )
+        ordem = {f: i for i, f in enumerate(["P1", "P2", "P3", "P4", "P5", "Sem preço"])}
+        por_faixa = por_faixa.sort_values("Faixa", key=lambda s: s.map(ordem))
+        st.markdown('<p class="sb-section-title">Resumo por faixa</p>', unsafe_allow_html=True)
+        show_table(por_faixa, money_cols=["Valor estoque"], height=220)
+
+    st.caption(f"{len(show):,} linhas".replace(",", "."))
+    show_table(
+        show,
+        money_cols=["Preço de venda", "Valor estoque"],
+        height=520,
+    )
+    st.download_button(
+        "Baixar base de estoque (.xlsx)",
+        data=dataframe_export(show),
+        file_name="base_estoque.xlsx",
+        key="dl_estoque",
+    )
+
+
 def tab_base(filtered: pd.DataFrame) -> None:
     st.markdown(
         f"""
@@ -1859,6 +2112,8 @@ def tab_vendas_dia(filtered: pd.DataFrame) -> None:
 
 def main():
     inject_theme()
+    if not exigir_senha():
+        return
     render_header()
 
     st.sidebar.markdown("### Ajuda")
@@ -1866,6 +2121,8 @@ def main():
         """
         <div class="sb-formula" style="margin-top:0.5rem;">
           Upload e filtros estão na aba <strong>Dados</strong>.<br/><br/>
+          Para compartilhar: rode <strong>preparar_publicacao.bat</strong>,
+          faça push no GitHub e publique no Streamlit Cloud.<br/><br/>
           Se o painel lateral sumir, clique na seta <strong>▶</strong>
           no canto superior esquerdo da tela.
         </div>
@@ -1873,9 +2130,19 @@ def main():
         unsafe_allow_html=True,
     )
 
-    tab_dados_ui, tab_resumo, tab_panorama, tab_dia, tab_prod, tab_loja, tab_praca, tab_canal, tab_detalhe = st.tabs(
+    (
+        tab_resumo,
+        tab_panorama,
+        tab_dia,
+        tab_prod,
+        tab_loja,
+        tab_praca,
+        tab_canal,
+        tab_estoque_ui,
+        tab_detalhe,
+        tab_dados_ui,
+    ) = st.tabs(
         [
-            "Dados",
             "Visão geral",
             "Resumo praça",
             "Vendas por dia",
@@ -1883,7 +2150,9 @@ def main():
             "Lojas",
             "Praças",
             "Canais",
+            "Estoque",
             "Base detalhada",
+            "Dados",
         ]
     )
 
@@ -1918,6 +2187,8 @@ def main():
         tab_pracas(filtered)
     with tab_canal:
         tab_canais(filtered)
+    with tab_estoque_ui:
+        tab_estoque(filtered)
     with tab_detalhe:
         tab_base(filtered)
 

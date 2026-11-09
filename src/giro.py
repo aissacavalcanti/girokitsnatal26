@@ -31,19 +31,23 @@ def build_base_giro(
             loja_origem=("loja_origem", "first"),
         )
     )
-    e = (
-        estoque.groupby(["bcps", "codigo", "tipo"], as_index=False)
-        .agg(
-            estoque=("estoque", "sum"),
-            descricao_e=("descricao", "first"),
-            loja_e=("loja_origem", "first"),
-        )
-    )
+    e_aggs = {
+        "estoque": ("estoque", "sum"),
+        "descricao_e": ("descricao", "first"),
+        "loja_e": ("loja_origem", "first"),
+    }
+    if "preco_venda" in estoque.columns:
+        e_aggs["preco_venda"] = ("preco_venda", "first")
+    e = estoque.groupby(["bcps", "codigo", "tipo"], as_index=False).agg(**e_aggs)
 
     base = v.merge(e, on=["bcps", "codigo", "tipo"], how="outer")
     base["vendida"] = base["vendida"].fillna(0.0)
     base["estoque"] = base["estoque"].fillna(0.0)
     base["faturamento"] = base["faturamento"].fillna(0.0)
+    if "preco_venda" in base.columns:
+        base["preco_venda"] = base["preco_venda"].fillna(0.0)
+    else:
+        base["preco_venda"] = 0.0
     base["descricao"] = base["descricao"].fillna(base["descricao_e"]).fillna("")
     base["loja_origem"] = base["loja_origem"].fillna(base["loja_e"])
     base = base.drop(columns=["descricao_e", "loja_e"], errors="ignore")
@@ -101,10 +105,22 @@ def summarize(base: pd.DataFrame) -> dict:
     }
 
 
-def risk_flags(base_produto: pd.DataFrame, giro_baixo: float = 0.08, giro_alto: float = 0.25) -> pd.DataFrame:
+def risk_flags(
+    base_produto: pd.DataFrame,
+    giro_sobra_alto: float = 0.55,
+    giro_sobra_moderado: float = 0.75,
+) -> pd.DataFrame:
+    """Cadência de giro (kits):
+
+    - giro < 55%  → risco de sobra alto
+    - giro ≤ 75%  → risco de sobra moderado
+    - giro > 75%  → giro saudável
+    - estoque 0 com venda → ruptura
+    """
     df = base_produto.copy()
-    df["alerta"] = "normal"
-    df.loc[df["giro"].fillna(0) < giro_baixo, "alerta"] = "estoque_parado"
-    df.loc[df["giro"].fillna(0) >= giro_alto, "alerta"] = "alto_giro"
+    g = df["giro"].fillna(0)
+    df["alerta"] = "giro_saudavel"
+    df.loc[g <= giro_sobra_moderado, "alerta"] = "risco_sobra_moderado"
+    df.loc[g < giro_sobra_alto, "alerta"] = "risco_sobra_alto"
     df.loc[(df["estoque"] <= 0) & (df["vendida"] > 0), "alerta"] = "ruptura"
     return df

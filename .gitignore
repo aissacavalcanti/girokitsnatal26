@@ -8,6 +8,10 @@ venv/
 .streamlit/secrets.toml
 *.xlsx
 !~data/exemplo/
+# Base local do PC (não sobe)
 data/ultima/*
 !data/ultima/.gitkeep
+# Snapshot para o dash compartilhado (sobe no GitHub via preparar_publicacao.bat)
+!data/publicada/
+!data/publicada/**
 .DS_Store

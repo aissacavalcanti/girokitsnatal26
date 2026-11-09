@@ -1,15 +1,13 @@
 [server]
-# Só neste PC — não expõe na rede
-address = "127.0.0.1"
-port = 8501
+# Em nuvem o Streamlit define o host/porta.
+# No PC local use rodar_local.bat (força 127.0.0.1).
 headless = true
-enableCORS = true
+enableCORS = false
 enableXsrfProtection = true
 fileWatcherType = "auto"
 
 [browser]
 gatherUsageStats = false
-serverAddress = "127.0.0.1"
 
 [client]
 toolbarMode = "minimal"
