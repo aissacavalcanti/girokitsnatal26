@@ -1,0 +1,1029 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tracking Beauty Week 2026</title>
+<style>
+:root{--color-fg:#1f2421;--color-fg-muted:#68706b;--color-bg:#f7f7f5;--color-panel:#ffffff;--color-border-line:#e3e5e1;--color-ok:#2f7d4f;--color-warn:#a8650c;--color-bad:#c2413b;
+--cds-font-size-caption:12px;--cds-font-size-body:14px;--cds-font-size-heading:16px;--cds-font-size-title:26px;--cds-font-weight-medium:600;
+--cds-gap-xs:4px;--cds-gap-sm:8px;--cds-gap-md:14px;--cds-gap-lg:20px;--cds-gap-xl:30px;--cds-pad-xs:4px;--cds-pad-sm:8px;--cds-pad-md:12px;--cds-pad-lg:16px;--cds-radius:8px;
+--cds-chart-muted:#c4c7c2;--cds-chart-grid:#eef0ec;--cds-chart-axis:#c9ccc6;--cds-chart-status-critical:#d0605e;--cds-surface-popover:#ffffff;--cds-border:#dcdfda;--cds-shadow-popover:0 4px 14px rgba(0,0,0,.12);--cds-text-secondary:#68706b;--cds-dur-slow:.3s;
+--font-anthropic-sans:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;--font-anthropic-serif:Georgia,"Times New Roman",serif;}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(--font-anthropic-sans);font-size:14px}
+#dash-root{max-width:1500px;margin:0 auto;padding:24px max(16px,3vw)}
+.bw-stamp{color:var(--color-fg-muted);font-size:12px;margin-top:28px}
+.bw-head h1{display:inline-block;margin-right:12px}.bw-upd{font-size:12px;color:var(--color-fg-muted);text-decoration:none;border:1px solid var(--color-border-line,#dcdfda);border-radius:6px;padding:3px 8px;vertical-align:middle}.bw-upd:hover{color:var(--color-fg)}</style>
+<script src="d3.min.js"></script>
+</head><body>
+<div id="dash-root">
+<p id="bw-loading" style="color:#68706b;font-size:14px">Carregando dados…</p>
+<script>
+window.BWM = {"hoje": "2026-11-18", "ultima": "18/11", "dias": 21.6, "rest": 12, "frac": 0.6, "hora": "14h11", "estoque": "18/11", "parcial": true, "gerado": "pipeline"};
+(function(){
+  const NAMES=["lojas", "lojas_dia", "praca_canal", "diario", "skus", "marcas", "fora_tabela", "dia_total", "dia_bw", "dia_sku", "estoque", "praca_pot"]; const raw={};
+  const calcs={}, cache={}, draws={}, onDatas=[]; let P=Object.assign({}, {"praca": null, "canal": null, "tabela": null, "sku_view": "top", "aba": "geral", "metrica": "qtd"}); const P0=Object.assign({}, P); let ready=false;
+  const get=(id)=>{ if(raw[id]) return raw[id]; if(calcs[id]){ if(!(id in cache)) cache[id]=calcs[id].fn(...calcs[id].inputs.map((i)=>get(i))); return cache[id]; } return null; };
+  const visible=(el)=>{ for(let n=el;n;n=n.parentElement){ if(n.hidden) return false; } return true; };
+  let pending=false;
+  const render=()=>{ pending=false; if(!ready) return;
+    onDatas.forEach((f)=>{ try{f();}catch(e){console.error(e);} });
+    Object.keys(draws).forEach((name)=>run(name));
+  };
+  const run=(name)=>{ const f=draws[name]; if(!f||!ready) return; document.querySelectorAll('[data-draw="'+name+'"]').forEach((el)=>{ if(!visible(el)) return; try{ f(el); }catch(e){ console.error(name,e); } }); };
+  const schedule=()=>{ if(!pending){ pending=true; requestAnimationFrame(render); } };
+  window.dash={
+    data:(id)=>{ const d=ready?get(id):null; return d? {status:'ok',data:d,rows:d,columns:d.length?Object.keys(d[0]):[],refreshing:false,meta:[]} : {status:'loading',data:[],rows:[],columns:[]}; },
+    calc:(id,o)=>{ calcs[id]=o; }, loader:()=>{},
+    onData:(fn)=>{ onDatas.push(fn); schedule(); },
+    draw:(name,fn)=>{ if(fn){ draws[name]=fn; schedule(); } else run(name); },
+    params:()=>Object.assign({},P),
+    setParams:(o)=>{ Object.assign(P,o); schedule(); },
+    resetParams:()=>{ P=Object.assign({},P0); schedule(); },
+    setLink:(n)=>{ try{ history.replaceState(null,'','#'+n); }catch(e){} },
+    refresh:()=>{},
+    colors:['#2f7d6d','#c5713a','#5b7fb8','#a35d9c','#7a8f3a','#c0a33a','#4fa3a5','#8a6d5a']
+  };
+  const applyMeta=()=>{
+    const M=window.BWM;
+    const periodo='Vendas de 28/10 a '+M.ultima+(M.parcial&&M.hora?' ('+M.ultima+' parcial, até '+M.hora+')':'')+' · Estoque de '+M.estoque;
+    document.querySelectorAll('[data-meta="periodo"]').forEach((e)=>{ e.textContent=periodo; });
+    document.querySelectorAll('[data-meta="ultima"]').forEach((e)=>{ e.textContent=M.ultima; });
+    document.querySelectorAll('[data-meta="rest"]').forEach((e)=>{ e.textContent=M.rest; });
+    document.querySelectorAll('[data-meta-opt]').forEach((e)=>{ e.textContent='Cobertura acima de '+M.rest+' dias'; });
+    document.querySelectorAll('[data-meta="parcialnota"]').forEach((e)=>{ e.textContent=M.parcial&&M.hora?' e '+M.ultima+' vai até '+M.hora:''; });
+    if(window.BW_INLINE) document.querySelectorAll('[data-site-only]').forEach((e)=>{ e.hidden=true; });
+  };
+  const start=()=>{ applyMeta(); ready=true; const msg=document.getElementById('bw-loading'); if(msg) msg.hidden=true; schedule(); };
+  if(window.BW_INLINE){
+    NAMES.forEach((n)=>{ raw[n]=window.BW_INLINE[n]; });
+    if(window.BW_INLINE.meta) window.BWM=Object.assign({},window.BWM,window.BW_INLINE.meta[0]);
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    const msg=document.getElementById('bw-loading');
+    const load=(f)=>fetch(f,{cache:'no-cache'}).then((r)=>{ if(!r.ok) throw new Error(f+': '+r.status); return r.json(); });
+    Promise.all([load('dados_meta.json').then((m)=>{ window.BWM=Object.assign({},window.BWM,m[0]); })].concat(NAMES.map((n)=>load('dados_'+n+'.json').then((j)=>{ raw[n]=j; }))))
+      .then(()=>{ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', start); else start(); })
+      .catch((e)=>{ if(msg) msg.textContent='Não foi possível carregar os dados ('+e.message+'). Abra o dashboard pelo link do site, não pelo arquivo baixado.'; console.error(e); });
+  }
+  let t; window.addEventListener('resize',()=>{ clearTimeout(t); t=setTimeout(schedule,150); });
+})();
+</script>
+
+<style>
+.bw { font-family: var(--font-anthropic-sans); color: var(--color-fg); display: flex; flex-direction: column; gap: var(--cds-gap-xl); }
+.bw-head h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+.bw-head .sub { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); margin: var(--cds-gap-xs) 0 var(--cds-gap-sm); }
+.bw-head .take { font-size: var(--cds-font-size-body); max-width: 72ch; line-height: 1.55; margin: 0; }
+.bw .bw-take b, .bw .tile b { font-weight: 600; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr)); gap: var(--cds-gap-md); }
+.tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-xs); min-width: 0; }
+.tile .lbl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.tile .val { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; }
+.tile .note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.sec { display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+.sec > h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.sec > .lead { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); margin: 0; max-width: 80ch; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
+.card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-sm); min-width: 0; }
+.card h3 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.card .note { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); margin: 0; }
+.chart { position: relative; min-height: 240px; }
+.heat { position: relative; min-height: 340px; overflow-x: auto; }
+.tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 3; }
+.tip .t { color: var(--cds-text-secondary); }
+.tbox { max-height: 30rem; overflow: auto; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); }
+.tbox.short { max-height: none; }
+table.t { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+table.t th { position: sticky; top: 0; background: var(--color-panel); text-align: right; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); border-bottom: 1px solid var(--color-border-line); padding: var(--cds-pad-xs) var(--cds-pad-sm); white-space: nowrap; z-index: 1; }
+table.t th.l, table.t td.l { text-align: left; }
+table.t th button { all: unset; cursor: pointer; }
+table.t th button:focus-visible { outline: 2px solid var(--color-fg); }
+table.t th[aria-sort=ascending] button::after { content: " ↑"; }
+table.t th[aria-sort=descending] button::after { content: " ↓"; }
+table.t td { text-align: right; padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+table.t td.wrap { white-space: normal; min-width: 14rem; }
+table.t tbody tr:hover { background: var(--cds-chart-grid); }
+.cellbar { display: inline-flex; align-items: center; gap: var(--cds-gap-xs); justify-content: flex-end; width: 100%; }
+.cellbar i { display: inline-block; height: 8px; border-radius: 2px; background: var(--cds-chart-muted); }
+.cellbar i.a { background: var(--bw-acc); }
+.pill { display: inline-block; padding: 1px 6px; border-radius: 999px; font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); }
+.good { color: var(--color-ok); } .warn { color: var(--color-warn); } .bad { color: var(--color-bad); }
+.ctrls { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; }
+.ctrls select, .ctrls input { font: inherit; font-size: var(--cds-font-size-caption); padding: var(--cds-pad-xs) var(--cds-pad-sm); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); color: var(--color-fg); }
+.ctrls input { min-width: 12rem; flex: 1 1 12rem; max-width: 22rem; }
+.ctrls .count { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.alert { border-left: 3px solid var(--color-warn); }
+.notes { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); line-height: 1.6; margin: 0; padding-left: 1.1rem; max-width: 90ch; }
+.legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); align-items: center; }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; background: var(--sw); }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+[data-dash-source-state=empty] { color: transparent; }
+#dash-root { --bw-acc: #2f7d6d; }
+.tabs { display: flex; gap: var(--cds-gap-xs); border-bottom: 1px solid var(--color-border-line); flex-wrap: wrap; }
+.tabs button { all: unset; cursor: pointer; padding: var(--cds-pad-sm) var(--cds-pad-md); font-size: var(--cds-font-size-body); color: var(--color-fg-muted); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tabs button[aria-selected=true] { color: var(--color-fg); border-bottom-color: var(--bw-acc); font-weight: var(--cds-font-weight-medium); }
+.tabs button:focus-visible { outline: 2px solid var(--color-fg); }
+.aba { display: flex; flex-direction: column; gap: var(--cds-gap-xl); }
+.mx td.d { min-width: 4.2rem; }
+.mx td.hot { font-weight: 600; }
+.mx th.l, .mx td.l { position: sticky; left: 0; background: var(--color-panel); z-index: 1; }
+.mx th.l { z-index: 2; }
+.btn-copy { font: inherit; font-size: var(--cds-font-size-caption); padding: var(--cds-pad-xs) var(--cds-pad-sm); border: 1px solid var(--bw-acc); border-radius: var(--cds-radius); background: var(--bw-acc); color: #fff; cursor: pointer; }
+.btn-copy:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+.copy-ok { color: var(--color-ok); font-size: var(--cds-font-size-caption); }
+.copy-fail { color: var(--color-warn); font-size: var(--cds-font-size-caption); }
+.copy-area { width: 100%; min-height: 8rem; font-family: ui-monospace, monospace; font-size: 11px; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); color: var(--color-fg); box-sizing: border-box; }
+.pot-tot { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); gap: var(--cds-gap-md); border-top: 1px solid var(--color-border-line); padding-top: var(--cds-pad-md); margin-top: auto; }
+.pot-tot .pt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pot-tot .lbl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.pot-tot .big { font-family: var(--font-anthropic-serif); font-size: 22px; font-variant-numeric: tabular-nums; }
+.seg { display: inline-flex; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); overflow: hidden; }
+.seg button { all: unset; cursor: pointer; padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.seg button[aria-pressed=true] { background: var(--bw-acc); color: #fff; }
+</style>
+
+<div class="bw" id="topo">
+  <header class="bw-head">
+    <h1>Tracking Beauty Week 2026</h1><a class="bw-upd" href="atualizar.html" data-site-only>Atualizar dados</a>
+    <p class="sub"><span data-meta="periodo">Vendas de 28/10 a 18/11 (18/11 parcial, até 14h11) · Estoque de 18/11</span> · Itens da tabela BW (BOT, QDB, OUI e EUD)</p>
+    
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Abas">
+    <button role="tab" data-aba="geral" id="tab-geral">Visão geral</button>
+    <button role="tab" data-aba="dia" id="tab-dia">Venda por dia</button>
+    <button role="tab" data-aba="estoque" id="tab-estoque">Estoque por loja</button>
+  </nav>
+
+  <div class="aba" id="aba-geral">
+  <div class="tiles" id="kpis">
+    <div class="tile"><span class="lbl">Faturamento total da rede</span><span class="val" data-draw="kpi" data-source="kpis" data-field="fat_total" data-row="0">—</span><span class="note">Todos os itens, 28/10 a <span data-meta="ultima">18/11</span></span></div>
+    <div class="tile"><span class="lbl">Faturamento BW</span><span class="val" data-draw="kpi" data-source="kpis" data-field="fat_bw_vig" data-row="0">—</span><span class="note">Todos os itens da tabela BW, inclusive os antecipados</span></div>
+    <div class="tile"><span class="lbl">% da receita vinda do BW</span><span class="val" data-draw="kpi" data-source="kpis" data-field="part" data-row="0">—</span><span class="note">Faturamento BW ÷ faturamento total</span></div>
+    <div class="tile"><span class="lbl">Giro BW</span><span class="val" data-draw="kpi" data-source="kpis" data-field="st" data-row="0">—</span><span class="note">Vendido ÷ (vendido + estoque)</span></div>
+    <div class="tile"><span class="lbl">Cobertura do estoque BW</span><span class="val" data-draw="kpi" data-source="kpis" data-field="cob" data-row="0">—</span><span class="note">Dias de estoque no ritmo atual · faltam <span data-meta="rest">12</span> dias de BW</span></div>
+  </div>
+
+  <div class="grid2" id="resumo-graficos">
+    <div class="card" id="diario">
+      <h3>Venda por dia</h3>
+      <p class="note">Faturamento total da rede por dia (R$). Em cima de cada barra: total do dia e % BW. Dentro da parte verde: faturamento dos itens da tabela BW.</p>
+      <div class="legend"><span style="--sw: var(--bw-acc)">Itens BW</span><span style="--sw: var(--cds-chart-muted)">Demais itens</span></div>
+      <div class="chart" data-draw="daily" data-source="diario_total"></div>
+    </div>
+    <div class="card" id="potencial">
+      <h3>Realizado × potencial em estoque por praça</h3>
+      <p class="note">Verde: faturamento BW já realizado. Cinza: estoque BW ainda nas lojas, a preço de venda com o desconto da Beauty Week (inclui itens que entram em desconto até 26/11). A % mostra quanto do total já virou venda.</p>
+      <div class="legend"><span style="--sw: var(--bw-acc)">Realizado BW</span><span style="--sw: var(--cds-chart-muted)">Potencial em estoque</span></div>
+      <div class="chart" data-draw="pot" data-source="praca_pot"></div>
+      <div class="pot-tot">
+        <div class="pt"><span class="lbl">Realizado BW na rede</span><span class="big" data-draw="pot-tot" data-source="pot_total" data-field="real" data-row="0">—</span><span class="lbl">faturamento de todos os itens da tabela BW</span></div>
+        <div class="pt"><span class="lbl">Potencial em estoque na rede</span><span class="big" data-draw="pot-tot" data-source="pot_total" data-field="pot" data-row="0">—</span><span class="lbl">já em desconto: <b data-draw="pot-tot" data-source="pot_total" data-field="pot_vig" data-row="0">—</b> · entra até 26/11: <b data-draw="pot-tot" data-source="pot_total" data-field="pot_fut" data-row="0">—</b></span></div>
+        <div class="pt"><span class="lbl">Já convertido em venda</span><span class="big" data-draw="pot-tot" data-source="pot_total" data-field="conv" data-row="0">—</span><span class="lbl">realizado ÷ (realizado + potencial)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="sec" id="giro">
+    <h2>Giro por praça e canal</h2>
+    <p class="lead">Giro dos SKUs que estão com desconto vigente hoje. Verde é giro alto, vermelho é giro baixo. Cobertura acima de <span data-meta="rest">12</span> dias indica estoque que deve sobrar depois de 30/11 no ritmo atual; abaixo de 10 dias, risco de ruptura antes da semana BW.</p>
+    <div class="card" id="mapa">
+      <h3>Mapa de giro: praça × canal</h3>
+      <p class="note">Cada célula mostra giro e, abaixo, a cobertura em dias. Passe o mouse para ver faturamento e % da receita.</p>
+      <div class="heat" data-draw="heat" data-source="pc_calc"></div>
+    </div>
+    <div class="grid2">
+      <div class="card" id="por-canal">
+        <h3>Por canal</h3>
+        <p class="note">ERs e HUBs já vendem Eudora com desconto desde 28/10 (regra VD).</p>
+        <div class="tbox short">
+          <table class="t" id="tab-canal" data-sortdraw="t-canal" data-source="por_canal" data-row-key="canal">
+            <thead><tr><th class="l" data-field="canal" data-k="canal"><button>Canal</button></th><th data-field="lojas" data-k="lojas"><button>Lojas</button></th><th data-field="fat_total" data-k="fat_total"><button>Fat. total</button></th><th data-field="part" data-k="part"><button>% receita BW</button></th><th data-field="st" data-k="st"><button>Giro</button></th><th data-field="cob" data-k="cob"><button>Cobertura</button></th></tr></thead>
+            <tbody data-draw="t-canal"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card" id="por-praca">
+        <h3>Por praça</h3>
+        <p class="note">Ordenado do melhor para o pior giro.</p>
+        <div class="tbox short">
+          <table class="t" id="tab-praca" data-sortdraw="t-praca" data-source="por_praca" data-row-key="praca">
+            <thead><tr><th class="l" data-field="praca" data-k="praca"><button>Praça</button></th><th data-field="lojas" data-k="lojas"><button>Lojas</button></th><th data-field="fat_total" data-k="fat_total"><button>Fat. total</button></th><th data-field="part" data-k="part"><button>% receita BW</button></th><th data-field="st" data-k="st"><button>Giro</button></th><th data-field="cob" data-k="cob"><button>Cobertura</button></th></tr></thead>
+            <tbody data-draw="t-praca"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="receita">
+    <h2>Quanto o BW está puxando a receita</h2>
+    <p class="lead">Faturamento por dia, separando o que veio de itens da tabela BW. 28/10 é abertura de ciclo VD; 01/11 é domingo e 02/11 feriado; 07/11 e 14/11 são sábado, 08/11 e 15/11 domingo (15/11 também feriado)<span data-meta="parcialnota"> e 18/11 vai até 14h11</span>.</p>
+    <div class="grid2">
+      <div class="card" id="marcas">
+        <h3>Giro por tabela</h3>
+        <p class="note">SKUs em vigência hoje. Barras = giro; o número à direita é a cobertura.</p>
+        <div class="chart" data-draw="marcas" data-source="marcas_vig" style="min-height: 180px"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="lojas">
+    <h2>Lojas</h2>
+    <p class="lead">Quanto da receita de cada loja veio de itens da tabela BW, e o giro dos itens em vigência. "Zerados" são SKUs em vigência que a loja vendeu e hoje estão sem estoque. Ao escolher um dia, faturamento e unidades são só daquele dia; o estoque é sempre o atual, e a cobertura passa a usar a venda desse dia.</p>
+    <div class="card">
+      <div class="ctrls">
+        <select id="f-praca" aria-label="Praça" data-draw="sel-praca" data-source="praca_canal"></select>
+        <select id="f-canal" aria-label="Canal" data-draw="sel-canal" data-source="praca_canal"></select>
+        <select id="f-dia" aria-label="Dia" data-draw="sel-dia" data-source="lojas_dia"></select>
+        <input id="q-loja" type="search" placeholder="Buscar loja ou código" aria-label="Buscar loja">
+        <span class="count"><b data-draw="n-lojas">—</b> lojas</span>
+      </div>
+      <div class="tbox">
+        <table class="t" id="tab-lojas" data-source="lojas_dia" data-row-key="bcps,dt">
+          <thead><tr>
+            <th class="l" data-field="loja" data-k="loja"><button>Loja</button></th>
+            <th class="l" data-field="praca" data-k="praca"><button>Praça</button></th>
+            <th class="l" data-field="canal" data-k="canal"><button>Canal</button></th>
+            <th data-field="fat_total" data-k="fat_total"><button>Fat. total</button></th>
+            <th data-field="fat_bw_vig" data-k="fat_bw_vig"><button>Fat. BW</button></th>
+            <th data-source="lojas_calc" data-field="part" data-k="part"><button>% receita BW</button></th>
+            <th data-field="qtd" data-k="qtd"><button>Un. vendidas</button></th>
+            <th data-field="est" data-k="est"><button>Estoque un.</button></th>
+            <th data-source="lojas_calc" data-field="st" data-k="st"><button>Giro</button></th>
+            <th data-source="lojas_calc" data-field="cob" data-k="cob"><button>Cobertura</button></th>
+            <th data-field="skus_ruptura" data-k="skus_ruptura"><button>Zerados</button></th>
+          </tr></thead>
+          <tbody data-draw="t-lojas"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="skus">
+    <h2>SKUs</h2>
+    <p class="lead">Escolha a visão: mais vendidos (todos os itens BW, em vigência ou não), risco de sobra (cobertura acima de <span data-meta="rest">12</span> dias ou sem venda), risco de ruptura (cobertura abaixo de 10 dias) ou itens que ainda vão entrar em desconto (venda atual, sem desconto, serve de base de comparação).</p>
+    <div class="card">
+      <div class="ctrls">
+        <select id="f-view" aria-label="Visão">
+          <option value="top">Mais vendidos (todos os itens BW)</option>
+          <option value="sobra">Risco de sobra</option>
+          <option value="ruptura">Risco de ruptura</option>
+          <option value="base">Ainda sem desconto (base)</option>
+        </select>
+        <select id="f-tabela" aria-label="Tabela" data-draw="sel-tabela" data-source="marcas"></select>
+        <input id="q-sku" type="search" placeholder="Buscar SKU ou descrição" aria-label="Buscar SKU">
+        <span class="count"><b data-draw="n-skus">—</b> SKUs</span>
+      </div>
+      <div class="tbox">
+        <table class="t" id="tab-skus" data-sortdraw="t-skus" data-source="skus" data-row-key="sku">
+          <thead><tr>
+            <th class="l" data-field="sku" data-k="sku"><button>SKU</button></th>
+            <th class="l" data-field="descricao" data-k="descricao"><button>Descrição</button></th>
+            <th class="l" data-field="versao_de" data-k="versao_de"><button>Versão de</button></th>
+            <th class="l" data-field="tabela" data-k="tabela"><button>Tabela</button></th>
+            <th class="l" data-field="status" data-k="status"><button>Status</button></th>
+            <th data-field="desc_pct" data-k="desc_pct"><button>Desconto</button></th>
+            <th data-field="qtd" data-k="qtd"><button>Un. vendidas</button></th>
+            <th data-field="fat" data-k="fat"><button>Faturamento</button></th>
+            <th data-field="est" data-k="est"><button>Estoque un.</button></th>
+            <th data-source="skus_calc" data-field="st" data-k="st"><button>Giro</button></th>
+            <th data-source="skus_calc" data-field="cob" data-k="cob"><button>Cobertura</button></th>
+            <th data-field="lojas_ruptura" data-k="lojas_ruptura"><button>Lojas zeradas</button></th>
+          </tr></thead>
+          <tbody data-draw="t-skus"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  
+
+  </div>
+
+  <div class="aba" id="aba-dia" hidden>
+    <section class="sec" id="venda-por-dia">
+      <h2>Venda por dia</h2>
+      <p class="lead">Acompanhe dia a dia quanto os itens da tabela BW venderam, e o peso deles na receita. Os filtros valem para todos os quadros desta aba (a tabela muda só o BW; o faturamento total segue praça e canal).</p>
+      <div class="ctrls">
+        <select id="d-praca" aria-label="Praça" data-draw="sel-praca" data-source="praca_canal"></select>
+        <select id="d-canal" aria-label="Canal" data-draw="sel-canal" data-source="praca_canal"></select>
+        <select id="d-tabela" aria-label="Tabela" data-draw="sel-tabela" data-source="marcas"></select>
+      </div>
+      <div class="card" id="dia-grafico">
+        <h3>Faturamento BW por dia</h3>
+        <p class="note">Barras = faturamento dos itens da tabela BW no dia. O número acima é a % da receita total do dia.</p>
+        <div class="chart" data-draw="dia-chart" data-source="dia_bw dia_total"></div>
+      </div>
+      <div class="card" id="dia-tabela">
+        <h3>Dia a dia</h3>
+        <p class="note">01/11 é domingo e 02/11 feriado. 07/11 e 14/11 são sábado, 08/11 e 15/11 domingo (15/11 também feriado)<span data-meta="parcialnota"> e 18/11 vai até 14h11</span>.</p>
+        <div class="tbox short" data-draw="dia-table" data-source="dia_bw dia_total"></div>
+      </div>
+      <div class="card" id="dia-skus">
+        <h3>SKUs por dia</h3>
+        <p class="note">Ordenado pelo total do período. Versões novas (V2, V4, C/CAR) aparecem com o SKU de origem na tabela BW.</p>
+        <div class="ctrls">
+          <span class="seg" role="group" aria-label="Métrica">
+            <button class="m-btn" data-m="qtd">Unidades</button>
+            <button class="m-btn" data-m="fat">Faturamento</button>
+          </span>
+          <input id="q-dsku" type="search" placeholder="Buscar SKU ou descrição" aria-label="Buscar SKU">
+          <span class="count"><b data-draw="n-dsku">—</b> SKUs</span>
+          <button class="btn-copy" id="copy-dsku" type="button">Copiar tabela para o Excel</button>
+          <span class="copy-ok" id="copy-ok" hidden>Copiado. Abra o Excel e cole (Ctrl+V).</span>
+          <span class="copy-fail" id="copy-fail" hidden>Não deu para copiar direto. Selecione o texto abaixo (Ctrl+A) e copie (Ctrl+C).</span>
+        </div>
+        <textarea id="copy-area" class="copy-area" aria-label="Tabela em texto para copiar" readonly hidden></textarea>
+        <div class="tbox" data-draw="dia-mx" data-source="dia_sku skus"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="aba" id="aba-estoque" hidden>
+    <section class="sec" id="estoque-por-loja">
+      <h2>Estoque por loja e SKU</h2>
+      <p class="lead">Saldo de estoque de cada SKU BW em cada loja, com a venda do período e de hoje. Escolha uma loja para ver todos os SKUs dela, ou busque um SKU para ver em quais lojas ele está. Mostro até 500 linhas por vez; use os filtros para chegar no que precisa.</p>
+      <div class="card">
+        <div class="ctrls">
+          <select id="e-praca" aria-label="Praça" data-draw="sel-praca" data-source="praca_canal"></select>
+          <select id="e-canal" aria-label="Canal" data-draw="sel-canal" data-source="praca_canal"></select>
+          <select id="e-loja" aria-label="Loja" data-draw="sel-loja" data-source="lojas"></select>
+          <select id="e-tabela" aria-label="Tabela" data-draw="sel-tabela" data-source="marcas"></select>
+          <select id="e-status" aria-label="Status">
+            <option value="">Todos os status</option>
+            <option value="vig">Em vigência</option>
+            <option value="futuro">Ainda sem desconto</option>
+          </select>
+          <select id="e-sit" aria-label="Situação">
+            <option value="">Todas as situações</option>
+            <option value="zerado">Vendeu e está zerado</option>
+            <option value="semvenda">Tem estoque e não vendeu</option>
+            <option value="sobra" data-meta-opt="1">Cobertura acima de 12 dias</option>
+            <option value="ruptura">Cobertura abaixo de 10 dias</option>
+          </select>
+          <input id="q-est" type="search" placeholder="Buscar SKU ou descrição" aria-label="Buscar SKU">
+        </div>
+        <div class="ctrls">
+          <span class="count"><b data-draw="n-est">—</b> combinações loja × SKU encontradas · estoque somado: <b data-draw="s-est">—</b> un.</span>
+          <button class="btn-copy" id="copy-est" type="button">Copiar estoque para o Excel</button>
+          <span class="copy-ok" id="copy-est-ok" hidden>Copiado com todas as linhas do filtro. Abra o Excel e cole (Ctrl+V).</span>
+          <span class="copy-fail" id="copy-est-fail" hidden>Não deu para copiar direto. Selecione o texto abaixo (Ctrl+A) e copie (Ctrl+C).</span>
+        </div>
+        <textarea id="copy-est-area" class="copy-area" aria-label="Estoque em texto para copiar" readonly hidden></textarea>
+        <div class="tbox" style="max-height: 36rem">
+          <table class="t" id="tab-est" data-sortdraw="t-est" data-source="estoque_calc" data-row-key="bcps,sku">
+            <thead><tr>
+              <th class="l" data-field="loja" data-k="loja"><button>Loja</button></th>
+              <th class="l" data-field="praca" data-k="praca"><button>Praça</button></th>
+              <th class="l" data-field="canal" data-k="canal"><button>Canal</button></th>
+              <th class="l" data-field="sku" data-k="sku"><button>SKU</button></th>
+              <th class="l" data-field="descricao" data-k="descricao"><button>Descrição</button></th>
+              <th class="l" data-field="tabela" data-k="tabela"><button>Tabela</button></th>
+              <th class="l" data-field="status" data-k="status"><button>Status</button></th>
+              <th data-field="est" data-k="est"><button>Estoque un.</button></th>
+              <th data-field="qtd_hoje" data-k="qtd_hoje"><button>Vendeu hoje</button></th>
+              <th data-field="qtd" data-k="qtd"><button>Vendeu no período</button></th>
+              <th data-field="st" data-k="st"><button>Giro</button></th>
+              <th data-field="cob" data-k="cob"><button>Cobertura</button></th>
+            </tr></thead>
+            <tbody data-draw="t-est"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  
+</div>
+
+<script>
+window.bw = (() => {
+  const nf0 = new Intl.NumberFormat('pt-BR', {maximumFractionDigits: 0});
+  const nf1 = new Intl.NumberFormat('pt-BR', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+  const brl = (v) => v == null || isNaN(v) ? '—' : 'R$ ' + nf0.format(v);
+  const brlc = (v) => {
+    if (v == null || isNaN(v)) return '—';
+    if (Math.abs(v) >= 1e6) return 'R$ ' + nf1.format(v / 1e6) + ' mi';
+    if (Math.abs(v) >= 1e3) return 'R$ ' + nf0.format(v / 1e3) + ' mil';
+    return 'R$ ' + nf0.format(v);
+  };
+  const pct = (v) => v == null || isNaN(v) ? '—' : nf1.format(v * 100) + '%';
+  const int = (v) => v == null || isNaN(v) ? '—' : nf0.format(v);
+  const dias = (v) => v == null || isNaN(v) ? 'sem venda' : nf0.format(v) + ' dias';
+  const cobClass = (v) => v == null || isNaN(v) ? 'bad' : v > BWM.rest ? 'warn' : v < 10 ? 'bad' : 'good';
+  const DIAS = BWM.dias;
+  const giro = (q, e) => ({st: q + e > 0 ? q / (q + e) : null, cob: q > 0 ? e / (q / BWM.dias) : null});
+  const css = (name) => getComputedStyle(document.getElementById('dash-root') || document.body).getPropertyValue(name).trim();
+  const ok = (id) => dash.data(id).status === 'ok';
+  window.bwSorts = window.bwSorts || {};
+  const sortBy = (id, rows, get) => {
+    const s = window.bwSorts[id];
+    if (!s) return rows;
+    const g = get || ((r, k) => r[k]);
+    return rows.sort((a, b) => {
+      const x = g(a, s.k), y = g(b, s.k);
+      const nx = x == null || x === '' || (typeof x === 'number' && isNaN(x)), ny = y == null || y === '' || (typeof y === 'number' && isNaN(y));
+      if (nx && ny) return 0; if (nx) return 1; if (ny) return -1;
+      return (typeof x === 'string' ? x.localeCompare(y, 'pt-BR', {numeric: true}) : x - y) * s.dir;
+    });
+  };
+  const toggleSort = (id, k, isText) => { const s = window.bwSorts[id]; window.bwSorts[id] = {k, dir: s && s.k === k ? -s.dir : (isText ? 1 : -1)}; };
+  const ariaSort = (id) => {
+    const s = window.bwSorts[id];
+    for (const th of document.querySelectorAll('#' + id + ' th[data-k]')) th.setAttribute('aria-sort', s && s.k === th.dataset.k ? (s.dir > 0 ? 'ascending' : 'descending') : 'none');
+  };
+  return {brl, brlc, pct, int, dias, cobClass, giro, css, ok, nf0, nf1, sortBy, toggleSort, ariaSort};
+})();
+</script>
+
+<script>
+dash.calc('kpis', {inputs: ['lojas'], title: 'Totais da rede', description: 'Soma das lojas: faturamento, % da receita BW, giro e cobertura (21,6 dias).',
+  fn: (lojas) => {
+    const s = (k) => lojas.reduce((a, r) => a + r[k], 0);
+    const q = s('qtd'), e = s('est');
+    return [{fat_total: s('fat_total'), fat_bw_vig: s('fat_bw_vig'), part: s('fat_bw_vig') / s('fat_total'), st: q / (q + e), cob: e / (q / BWM.dias)}];
+  }});
+dash.calc('pc_calc', {inputs: ['praca_canal'], title: 'Giro praça × canal', description: 'Cada praça e canal com % da receita BW, giro e cobertura.',
+  fn: (praca_canal) => praca_canal.map((r) => ({...r, part: r.fat_total > 0 ? r.fat_bw_vig / r.fat_total : null, st: r.qtd + r.est > 0 ? r.qtd / (r.qtd + r.est) : null, cob: r.qtd > 0 ? r.est / (r.qtd / BWM.dias) : null}))});
+dash.calc('por_praca', {inputs: ['praca_canal'], title: 'Giro por praça', description: 'Praça × canal somado por praça.', fn: (praca_canal) => {
+    const m = new Map();
+    for (const r of praca_canal) {
+      const a = m.get(r.praca) || {praca: r.praca, lojas: 0, fat_total: 0, fat_bw_vig: 0, qtd: 0, est: 0};
+      a.lojas += r.lojas; a.fat_total += r.fat_total; a.fat_bw_vig += r.fat_bw_vig; a.qtd += r.qtd; a.est += r.est;
+      m.set(r.praca, a);
+    }
+    return [...m.values()].map((a) => ({...a, part: a.fat_bw_vig / a.fat_total, st: a.qtd + a.est > 0 ? a.qtd / (a.qtd + a.est) : null, cob: a.qtd > 0 ? a.est / (a.qtd / BWM.dias) : null})).sort((a, b) => b.st - a.st);
+  }});
+dash.calc('por_canal', {inputs: ['praca_canal'], title: 'Giro por canal', description: 'Praça × canal somado por canal.', fn: (praca_canal) => {
+    const m = new Map();
+    for (const r of praca_canal) {
+      const a = m.get(r.canal) || {canal: r.canal, lojas: 0, fat_total: 0, fat_bw_vig: 0, qtd: 0, est: 0};
+      a.lojas += r.lojas; a.fat_total += r.fat_total; a.fat_bw_vig += r.fat_bw_vig; a.qtd += r.qtd; a.est += r.est;
+      m.set(r.canal, a);
+    }
+    return [...m.values()].map((a) => ({...a, part: a.fat_bw_vig / a.fat_total, st: a.qtd + a.est > 0 ? a.qtd / (a.qtd + a.est) : null, cob: a.qtd > 0 ? a.est / (a.qtd / BWM.dias) : null})).sort((a, b) => b.st - a.st);
+  }});
+dash.calc('extremos', {inputs: ['pc_calc'], title: 'Melhor e pior giro', description: 'Combinação praça × canal com maior e menor giro, entre as que tiveram venda.',
+  fn: (pc_calc) => {
+    const s = pc_calc.filter((r) => r.qtd > 0).sort((a, b) => b.st - a.st);
+    const lab = (r) => r.praca + ' · ' + r.canal;
+    return [{tipo: 'melhor', rotulo: lab(s[0]), st: s[0].st}, {tipo: 'pior', rotulo: lab(s[s.length - 1]), st: s[s.length - 1].st}];
+  }});
+dash.calc('lojas_calc', {inputs: ['lojas_dia'], title: 'Indicadores por loja e dia', description: '% da receita BW, giro e cobertura de cada loja, no período (21,6 dias) ou num dia.',
+  fn: (lojas_dia) => lojas_dia.map((r) => ({bcps: r.bcps, dt: r.dt, part: r.fat_total > 0 ? r.fat_bw_vig / r.fat_total : null, st: r.qtd + r.est > 0 ? r.qtd / (r.qtd + r.est) : null, cob: r.qtd > 0 ? r.est / (r.qtd / (r.dt === 'total' ? 14 : 1)) : null}))});
+dash.calc('estoque_calc', {inputs: ['estoque', 'skus', 'lojas'], title: 'Estoque por loja e SKU', description: 'Saldo e venda de cada SKU BW por loja, com descrição, status, giro e cobertura (21,6 dias).',
+  fn: (estoque, skus, lojas) => {
+    const s = new Map(skus.map((r) => [r.sku, r])), l = new Map(lojas.map((r) => [r.bcps, r]));
+    return estoque.map((r) => {
+      const a = s.get(r.sku) || {}, b = l.get(r.bcps) || {};
+      return {bcps: r.bcps, sku: r.sku, loja: b.loja || r.bcps, praca: b.praca || '', canal: b.canal || '', descricao: a.descricao || '', tabela: a.tabela || '', status: a.status || '', est: r.est, qtd: r.qtd, qtd_hoje: r.qtd_hoje, st: r.qtd + r.est > 0 ? r.qtd / (r.qtd + r.est) : null, cob: r.qtd > 0 ? r.est / (r.qtd / BWM.dias) : null};
+    });
+  }});
+dash.calc('pot_total', {inputs: ['praca_pot'], title: 'Realizado e potencial na rede', description: 'Soma das praças: faturamento BW realizado e estoque BW a preço com desconto.',
+  fn: (praca_pot) => {
+    const s = (k) => praca_pot.reduce((a, r) => a + r[k], 0);
+    const real = s('fat_bw_vig'), pot = s('pot');
+    return [{real, pot, pot_vig: s('pot_vig'), pot_fut: s('pot_fut'), conv: real / (real + pot)}];
+  }});
+dash.calc('skus_calc', {inputs: ['skus'], title: 'Giro por SKU', description: 'Giro e cobertura de cada SKU na rede.',
+  fn: (skus) => skus.map((r) => ({sku: r.sku, st: r.qtd + r.est > 0 ? r.qtd / (r.qtd + r.est) : null, cob: r.qtd > 0 ? r.est / (r.qtd / BWM.dias) : null}))});
+dash.calc('diario_total', {inputs: ['diario'], title: 'Faturamento por dia', description: 'Faturamento total e dos itens BW por dia, somando os canais.',
+  fn: (diario) => {
+    const m = new Map();
+    for (const r of diario) { const a = m.get(r.dt) || {dt: r.dt, fat_total: 0, fat_bw_vig: 0}; a.fat_total += r.fat_total; a.fat_bw_vig += r.fat_bw_vig; m.set(r.dt, a); }
+    return [...m.values()].sort((a, b) => a.dt < b.dt ? -1 : 1).map((a) => ({...a, part: a.fat_bw_vig / a.fat_total}));
+  }});
+dash.calc('marcas_vig', {inputs: ['marcas'], title: 'Giro por tabela', description: 'Giro e cobertura dos SKUs em vigência por tabela.',
+  fn: (marcas) => marcas.filter((r) => r.status === 'Em vigência').map((r) => ({tabela: r.tabela, fat: r.fat, qtd: r.qtd, est: r.est, st: r.qtd / (r.qtd + r.est), cob: r.qtd > 0 ? r.est / (r.qtd / BWM.dias) : null})).sort((a, b) => b.st - a.st)});
+dash.calc('fora_total', {inputs: ['fora_tabela'], title: 'Itens fora da tabela', description: 'Quantidade e faturamento dos SKUs do estoque BW que não estão na tabela.',
+  fn: (fora_tabela) => [{skus: fora_tabela.length, fat: fora_tabela.reduce((a, r) => a + r.fat, 0)}]});
+</script>
+
+<script>
+const B = window.bw;
+const field = (el) => el.dataset.field;
+dash.draw('kpi', (el) => {
+  const d = dash.data('kpis');
+  if (d.status !== 'ok') { el.textContent = '—'; return; }
+  const r = d.data[0], f = field(el), v = r[f];
+  el.textContent = f === 'part' || f === 'st' ? B.pct(v) : f === 'cob' ? B.dias(v) : B.brlc(v);
+});
+dash.draw('ext', (el) => {
+  const d = dash.data('extremos');
+  if (d.status !== 'ok') { el.textContent = '—'; return; }
+  const r = d.data.find((x) => x.tipo === new URLSearchParams(el.dataset.where).get('tipo'));
+  el.textContent = field(el) === 'st' ? B.pct(r.st) : r.rotulo;
+});
+dash.draw('fora', (el) => {
+  const d = dash.data('fora_total');
+  if (d.status !== 'ok') { el.textContent = '—'; return; }
+  const r = d.data[0];
+  el.textContent = field(el) === 'fat' ? B.brlc(r.fat) : B.int(r.skus);
+});
+
+// heatmap praça × canal
+dash.draw('heat', (el) => {
+  const d = dash.data('pc_calc');
+  el.replaceChildren();
+  if (d.status !== 'ok') { el.textContent = '—'; return; }
+  const rows = d.data;
+  const ordC = ['Varejo', 'Híbrida', 'Venda Direta', 'HUB'];
+  const canais = ordC.filter((c) => rows.some((r) => r.canal === c));
+  const pr = [...new Set(rows.map((r) => r.praca))].sort();
+  const W = Math.max(el.clientWidth, 480), lw = 90, top = 28, ch = 36;
+  const cw = (W - lw) / canais.length, H = top + pr.length * ch + 4;
+  const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).style('display', 'block');
+  const sts = rows.map((r) => r.st).filter((v) => v != null);
+  const pick = (n, fb) => { const v = B.css(n); return v && d3.color(v) ? v : fb; };
+  const bad = pick('--cds-chart-status-critical', '#d0605e'), good = pick('--bw-acc', '#2f7d6d'), mid = pick('--color-panel', '#f1f1ee');
+  const col = d3.scaleLinear().domain([d3.min(sts), d3.median(sts), d3.max(sts)]).range([bad, mid, good]).interpolate(d3.interpolateRgb);
+  svg.selectAll('text.c').data(canais).join('text').attr('x', (c, i) => lw + i * cw + cw / 2).attr('y', 16).attr('text-anchor', 'middle')
+    .attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)').text((c) => c);
+  svg.selectAll('text.p').data(pr).join('text').attr('x', 0).attr('y', (p, i) => top + i * ch + ch / 2 + 4)
+    .attr('fill', 'var(--color-fg)').style('font-size', 'var(--cds-font-size-caption)').text((p) => p);
+  const tip = d3.select(el).append('div').attr('class', 'tip').style('display', 'none');
+  const g = svg.selectAll('g.cell').data(rows).join('g').attr('transform', (r) => `translate(${lw + canais.indexOf(r.canal) * cw + 2},${top + pr.indexOf(r.praca) * ch + 2})`);
+  g.append('rect').attr('width', cw - 4).attr('height', ch - 4).attr('rx', 4).attr('fill', (r) => r.st == null ? mid : col(r.st));
+  g.append('text').attr('x', (cw - 4) / 2).attr('y', 14).attr('text-anchor', 'middle').attr('fill', 'var(--color-fg)')
+    .style('font-size', 'var(--cds-font-size-caption)').style('font-weight', 600).text((r) => B.pct(r.st));
+  g.append('text').attr('x', (cw - 4) / 2).attr('y', 27).attr('text-anchor', 'middle').attr('fill', 'var(--color-fg)').attr('opacity', .75)
+    .style('font-size', '10px').text((r) => r.cob == null ? 'sem venda' : B.nf0.format(r.cob) + ' d');
+  g.on('mousemove', (ev, r) => {
+    const [x, y] = d3.pointer(ev, el);
+    tip.style('display', null).html('');
+    tip.append('div').attr('class', 't').text(r.praca + ' · ' + r.canal + ' (' + r.lojas + ' lojas)');
+    tip.append('div').text('Giro ' + B.pct(r.st) + ' · cobertura ' + B.dias(r.cob));
+    tip.append('div').text('Fat. total ' + B.brlc(r.fat_total) + ' · BW ' + B.brlc(r.fat_bw_vig) + ' (' + B.pct(r.part) + ')');
+    tip.append('div').text(B.int(r.qtd) + ' un. vendidas · ' + B.int(r.est) + ' em estoque');
+    const tw = tip.node().offsetWidth;
+    tip.style('left', Math.max(0, Math.min(x + 12, el.clientWidth - tw - 4)) + 'px').style('top', (y + 12) + 'px');
+  }).on('mouseleave', () => tip.style('display', 'none'));
+});
+
+const bar = (v, max, acc) => { const s = document.createElement('span'); s.className = 'cellbar'; const t = document.createElement('span'); t.textContent = B.pct(v); const i = document.createElement('i'); if (acc) i.className = 'a'; i.style.width = (v == null ? 0 : Math.max(2, 48 * v / max)) + 'px'; s.append(t, i); return s; };
+const td = (txt, cls) => { const c = document.createElement('td'); if (cls) c.className = cls; if (txt instanceof Node) c.append(txt); else c.textContent = txt; return c; };
+const cob = (v) => { const s = document.createElement('span'); s.className = B.cobClass(v); s.textContent = B.dias(v); return s; };
+const sumTable = (id, key, tid) => (tb) => {
+  const d = dash.data(id);
+  tb.replaceChildren();
+  B.ariaSort(tid);
+  if (d.status !== 'ok') return;
+  const mp = d3.max(d.data, (r) => r.part), ms = d3.max(d.data, (r) => r.st);
+  for (const r of B.sortBy(tid, [...d.data])) {
+    const tr = document.createElement('tr'); tr.dataset.key = r[key];
+    tr.append(td(r[key], 'l'), td(B.int(r.lojas)), td(B.brlc(r.fat_total)), td(bar(r.part, mp, false)), td(bar(r.st, ms, true)), td(cob(r.cob)));
+    tb.append(tr);
+  }
+};
+dash.draw('t-canal', sumTable('por_canal', 'canal', 'tab-canal'));
+dash.draw('t-praca', sumTable('por_praca', 'praca', 'tab-praca'));
+
+// daily stacked bars
+dash.draw('daily', (el) => {
+  const d = dash.data('diario_total');
+  el.replaceChildren();
+  if (d.status !== 'ok') return;
+  const rows = d.data.map((r) => ({...r, date: new Date(r.dt + 'T12:00:00Z')}));
+  const W = Math.max(el.clientWidth, 300), H = 296, m = {t: 40, r: 8, b: 36, l: 8};
+  const x = d3.scaleBand(rows.map((r) => r.dt), [m.l, W - m.r]).padding(0.18);
+  const sh = (v) => v >= 1e6 ? B.nf1.format(v / 1e6) + ' mi' : B.nf0.format(v / 1e3) + ' mil';
+  const fs = x.bandwidth() < 42 ? 9 : 11;
+  const y = d3.scaleLinear([0, d3.max(rows, (r) => r.fat_total) * 1.08], [H - m.b, m.t]);
+  const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).style('display', 'block');
+  svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', H - m.b).attr('y2', H - m.b).attr('stroke', 'var(--cds-chart-axis)');
+  const wd = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+  const lab = (r) => wd[r.date.getUTCDay()] + ' ' + d3.utcFormat('%d/%m')(r.date);
+  const g = svg.selectAll('g.d').data(rows).join('g');
+  g.append('rect').attr('x', (r) => x(r.dt)).attr('width', x.bandwidth()).attr('y', (r) => y(r.fat_total)).attr('height', (r) => y(r.fat_bw_vig) - y(r.fat_total)).attr('fill', 'var(--cds-chart-muted)').attr('rx', 2);
+  g.append('rect').attr('x', (r) => x(r.dt)).attr('width', x.bandwidth()).attr('y', (r) => y(r.fat_bw_vig)).attr('height', (r) => H - m.b - y(r.fat_bw_vig)).attr('fill', 'var(--bw-acc)');
+  g.append('text').attr('x', (r) => x(r.dt) + x.bandwidth() / 2).attr('y', (r) => y(r.fat_total) - 20).attr('text-anchor', 'middle').attr('fill', 'var(--color-fg)').style('font-size', fs + 'px').style('font-weight', 600).text((r) => sh(r.fat_total));
+  g.append('text').attr('x', (r) => x(r.dt) + x.bandwidth() / 2).attr('y', (r) => y(r.fat_total) - 7).attr('text-anchor', 'middle').attr('fill', 'var(--color-fg-muted)').style('font-size', (fs - 1) + 'px').text((r) => B.pct(r.part) + ' BW');
+  g.filter((r) => H - m.b - y(r.fat_bw_vig) >= 16).append('text').attr('x', (r) => x(r.dt) + x.bandwidth() / 2).attr('y', (r) => y(r.fat_bw_vig) + 13).attr('text-anchor', 'middle').attr('fill', '#fff').style('font-size', (fs - 1) + 'px').style('font-weight', 600).text((r) => sh(r.fat_bw_vig));
+  g.append('text').attr('x', (r) => x(r.dt) + x.bandwidth() / 2).attr('y', H - 17).attr('text-anchor', 'middle').attr('fill', 'var(--color-fg-muted)').style('font-size', '10px').text((r) => wd[r.date.getUTCDay()]);
+  g.append('text').attr('x', (r) => x(r.dt) + x.bandwidth() / 2).attr('y', H - 5).attr('text-anchor', 'middle').attr('fill', 'var(--color-fg-muted)').style('font-size', '10px').text((r) => d3.utcFormat('%d/%m')(r.date));
+  const tip = d3.select(el).append('div').attr('class', 'tip').style('display', 'none');
+  g.on('mousemove', (ev, r) => {
+    const [px, py] = d3.pointer(ev, el);
+    tip.style('display', null).html('');
+    tip.append('div').attr('class', 't').text(lab(r));
+    tip.append('div').text('Total ' + B.brl(r.fat_total));
+    tip.append('div').text('Itens BW ' + B.brl(r.fat_bw_vig) + ' (' + B.pct(r.part) + ')');
+    const tw = tip.node().offsetWidth;
+    tip.style('left', Math.max(0, Math.min(px + 12, el.clientWidth - tw - 4)) + 'px').style('top', Math.max(0, py - 40) + 'px');
+  }).on('mouseleave', () => tip.style('display', 'none'));
+});
+
+// marcas bars
+dash.draw('marcas', (el) => {
+  const d = dash.data('marcas_vig');
+  el.replaceChildren();
+  if (d.status !== 'ok') return;
+  const rows = d.data, nm = {BOT: 'Boticário', EUD: 'Eudora', QDB: 'Quem disse, Berenice?', OUI: 'O.U.i'};
+  const W = Math.max(el.clientWidth, 280), rh = 34, H = rows.length * rh + 8;
+  const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).style('display', 'block');
+  const lt = svg.append('g');
+  const labs = lt.selectAll('text').data(rows).join('text').attr('x', 0).attr('y', (r, i) => i * rh + rh / 2 + 4).attr('fill', 'var(--color-fg)').style('font-size', 'var(--cds-font-size-caption)').text((r) => nm[r.tabela] || r.tabela);
+  let lw = 0; labs.each(function () { lw = Math.max(lw, this.getComputedTextLength()); }); lw += 10;
+  const rt = svg.append('g');
+  const rl = rt.selectAll('text').data(rows).join('text').attr('y', (r, i) => i * rh + rh / 2 + 4).attr('text-anchor', 'end').attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)').text((r) => B.pct(r.st) + ' · ' + B.dias(r.cob));
+  let rw = 0; rl.each(function () { rw = Math.max(rw, this.getComputedTextLength()); }); rl.attr('x', W);
+  const x = d3.scaleLinear([0, d3.max(rows, (r) => r.st)], [lw, W - rw - 10]);
+  svg.selectAll('rect').data(rows).join('rect').attr('x', lw).attr('y', (r, i) => i * rh + 9).attr('height', rh - 18).attr('width', (r) => Math.max(2, x(r.st) - lw)).attr('rx', 3).attr('fill', 'var(--bw-acc)');
+});
+</script>
+
+<script>
+const B2 = window.bw;
+for (const th of document.querySelectorAll('table[data-sortdraw] th[data-k]')) {
+  th.addEventListener('click', () => {
+    const t = th.closest('table');
+    B2.toggleSort(t.id, th.dataset.k, th.classList.contains('l'));
+    dash.draw(t.dataset.sortdraw);
+  });
+}
+const P = () => dash.params();
+const selDraw = (key, all, src, col) => (sel) => {
+  const d = dash.data(src);
+  const vals = d.status === 'ok' ? [...new Set(d.data.map((r) => r[col]))].sort() : [];
+  sel.replaceChildren(new Option(all, ''), ...vals.map((v) => new Option(v, v)));
+  sel.value = P()[key] ?? '';
+  sel.onchange = () => dash.setParams({[key]: sel.value || null});
+};
+dash.draw('sel-praca', selDraw('praca', 'Todas as praças', 'praca_canal', 'praca'));
+dash.draw('sel-canal', selDraw('canal', 'Todos os canais', 'praca_canal', 'canal'));
+dash.draw('sel-tabela', selDraw('tabela', 'Todas as tabelas', 'marcas', 'tabela'));
+dash.draw('sel-dia', (sel) => {
+  const d = dash.data('lojas_dia');
+  const WDs = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+  const dias = d.status === 'ok' ? [...new Set(d.data.map((r) => r.dt))].filter((x) => x !== 'total').sort() : [];
+  sel.replaceChildren(new Option('Todo o período', ''), ...dias.map((x) => { const dd = new Date(x + 'T12:00:00Z'); return new Option(WDs[dd.getUTCDay()] + ' ' + d3.utcFormat('%d/%m')(dd), x); }));
+  sel.value = P().dia ?? '';
+  sel.onchange = () => dash.setParams({dia: sel.value || null});
+});
+
+for (const v of document.querySelectorAll('#f-view')) {
+  v.addEventListener('change', () => dash.setParams({sku_view: v.value}));
+}
+dash.onData(() => { for (const v of document.querySelectorAll('#f-view')) v.value = P().sku_view || 'top'; });
+for (const q of document.querySelectorAll('#q-loja')) q.addEventListener('input', () => { dash.draw('t-lojas'); dash.draw('n-lojas'); });
+for (const q of document.querySelectorAll('#q-sku')) q.addEventListener('input', () => { dash.draw('t-skus'); dash.draw('n-skus'); });
+
+// lojas table
+window.bwSort = {k: 'part', dir: -1};
+for (const th of document.querySelectorAll('#tab-lojas th[data-k]')) {
+  th.addEventListener('click', () => {
+    const k = th.dataset.k;
+    window.bwSort = {k, dir: window.bwSort.k === k ? -window.bwSort.dir : (['loja', 'praca', 'canal'].includes(k) ? 1 : -1)};
+    dash.draw('t-lojas');
+  });
+}
+const lojasRows = () => {
+  const d = dash.data('lojas_dia'), c = dash.data('lojas_calc');
+  if (d.status !== 'ok' || c.status !== 'ok') return null;
+  const p = P(), dia = p.dia || 'total';
+  const cm = new Map(c.data.filter((r) => r.dt === dia).map((r) => [r.bcps, r]));
+  const qi = document.querySelector('#q-loja'), q = (qi ? qi.value : '').trim().toLowerCase();
+  return d.data.filter((r) => r.dt === dia).map((r) => ({...r, ...cm.get(r.bcps)}))
+    .filter((r) => (!p.praca || r.praca === p.praca) && (!p.canal || r.canal === p.canal) && (!q || (r.loja + ' ' + r.bcps).toLowerCase().includes(q)));
+};
+dash.draw('n-lojas', (el) => { const r = lojasRows(); el.textContent = r ? B2.int(r.length) : '—'; });
+dash.draw('t-lojas', (tb) => {
+  tb.replaceChildren();
+  const rows = lojasRows();
+  for (const th of document.querySelectorAll('#tab-lojas th[data-k]')) th.setAttribute('aria-sort', th.dataset.k === window.bwSort.k ? (window.bwSort.dir > 0 ? 'ascending' : 'descending') : 'none');
+  if (!rows) return;
+  const {k, dir} = window.bwSort;
+  rows.sort((a, b) => { const x = a[k], y = b[k]; if (x == null) return 1; if (y == null) return -1; return (typeof x === 'string' ? x.localeCompare(y) : x - y) * dir; });
+  const mp = d3.max(rows, (r) => r.part) || 1, ms = d3.max(rows, (r) => r.st) || 1;
+  const td = (txt, cls) => { const c = document.createElement('td'); if (cls) c.className = cls; if (txt instanceof Node) c.append(txt); else c.textContent = txt; return c; };
+  const bar = (v, max, acc) => { const s = document.createElement('span'); s.className = 'cellbar'; const t = document.createElement('span'); t.textContent = B2.pct(v); const i = document.createElement('i'); if (acc) i.className = 'a'; i.style.width = (v == null ? 0 : Math.max(2, 48 * v / max)) + 'px'; s.append(t, i); return s; };
+  const cob = (v) => { const s = document.createElement('span'); s.className = B2.cobClass(v); s.textContent = B2.dias(v); return s; };
+  for (const r of rows) {
+    const tr = document.createElement('tr'); tr.dataset.key = encodeURIComponent(r.bcps) + ',' + encodeURIComponent(r.dt);
+    tr.append(td(r.loja + ' (' + r.bcps + ')', 'l'), td(r.praca, 'l'), td(r.canal, 'l'), td(B2.brl(r.fat_total)), td(B2.brl(r.fat_bw_vig)), td(bar(r.part, mp, false)), td(B2.int(r.qtd)), td(B2.int(r.est)), td(bar(r.st, ms, true)), td(cob(r.cob)), td(B2.int(r.skus_ruptura)));
+    tb.append(tr);
+  }
+});
+
+// skus table
+const skuRows = () => {
+  const d = dash.data('skus'), c = dash.data('skus_calc');
+  if (d.status !== 'ok' || c.status !== 'ok') return null;
+  const cm = new Map(c.data.map((r) => [r.sku, r]));
+  const p = P(), view = p.sku_view || 'top', qi = document.querySelector('#q-sku'), q = (qi ? qi.value : '').trim().toLowerCase();
+  let rows = d.data.map((r) => ({...r, ...cm.get(r.sku)})).filter((r) => (!p.tabela || r.tabela === p.tabela) && (!q || (r.sku + ' ' + r.descricao).toLowerCase().includes(q)));
+  const vig = (r) => r.status === 'Em vigência';
+  if (view === 'top') rows = rows.filter((r) => r.qtd > 0).sort((a, b) => b.qtd - a.qtd);
+  if (view === 'sobra') rows = rows.filter((r) => vig(r) && r.est > 0 && (r.cob == null || r.cob > BWM.rest)).sort((a, b) => b.est - a.est);
+  if (view === 'ruptura') rows = rows.filter((r) => vig(r) && r.qtd > 0 && r.cob < 10).sort((a, b) => a.cob - b.cob);
+  if (view === 'base') rows = rows.filter((r) => !vig(r) && (r.qtd > 0 || r.est > 0)).sort((a, b) => b.fat - a.fat);
+  return rows;
+};
+dash.draw('n-skus', (el) => { const r = skuRows(); el.textContent = r ? B2.int(r.length) : '—'; });
+dash.draw('t-skus', (tb) => {
+  tb.replaceChildren();
+  B2.ariaSort('tab-skus');
+  const rows0 = skuRows();
+  if (!rows0) return;
+  const rows = B2.sortBy('tab-skus', rows0);
+  const td = (txt, cls) => { const c = document.createElement('td'); if (cls) c.className = cls; if (txt instanceof Node) c.append(txt); else c.textContent = txt; return c; };
+  const cob = (v) => { const s = document.createElement('span'); s.className = B2.cobClass(v); s.textContent = B2.dias(v); return s; };
+  const frag = document.createDocumentFragment();
+  for (const r of rows) {
+    const tr = document.createElement('tr'); tr.dataset.key = r.sku;
+    tr.append(td(r.sku, 'l'), td(r.descricao, 'l wrap'), td(r.versao_de || '', 'l'), td(r.tabela, 'l'), td(r.status, 'l'), td(B2.pct(r.desc_pct)), td(B2.int(r.qtd)), td(B2.brl(r.fat)), td(B2.int(r.est)), td(B2.pct(r.st)), td(cob(r.cob)), td(B2.int(r.lojas_ruptura)));
+    frag.append(tr);
+  }
+  tb.append(frag);
+});
+
+dash.draw('t-fora', (tb) => {
+  tb.replaceChildren();
+  const d = dash.data('fora_tabela');
+  B2.ariaSort('tab-fora');
+  if (d.status !== 'ok') return;
+  for (const r of B2.sortBy('tab-fora', [...d.data])) {
+    const tr = document.createElement('tr'); tr.dataset.key = r.sku;
+    for (const [v, cl] of [[r.sku, 'l'], [r.descricao, 'l wrap'], [B2.int(r.qtd)], [B2.brl(r.fat)], [B2.int(r.est)], [B2.int(r.lojas)]]) { const c = document.createElement('td'); if (cl) c.className = cl; c.textContent = v; tr.append(c); }
+    tb.append(tr);
+  }
+});
+</script>
+
+<script>
+const B3 = window.bw;
+const P3 = () => dash.params();
+// abas
+for (const b of document.querySelectorAll('.tabs button[data-aba]')) {
+  b.addEventListener('click', () => { dash.setParams({aba: b.dataset.aba}); dash.setLink(b.dataset.aba === 'dia' ? 'venda-por-dia' : b.dataset.aba === 'estoque' ? 'estoque-por-loja' : 'topo'); });
+}
+dash.onData(() => {
+  const aba = P3().aba || 'geral';
+  for (const b of document.querySelectorAll('.tabs button[data-aba]')) b.setAttribute('aria-selected', String(b.dataset.aba === aba));
+  for (const s of document.querySelectorAll('#aba-geral')) s.hidden = aba !== 'geral';
+  for (const s of document.querySelectorAll('#aba-dia')) s.hidden = aba !== 'dia';
+  for (const s of document.querySelectorAll('#aba-estoque')) s.hidden = aba !== 'estoque';
+  for (const s of document.querySelectorAll('#e-status')) s.value = P3().e_status || '';
+  for (const s of document.querySelectorAll('#e-sit')) s.value = P3().e_sit || '';
+  for (const b of document.querySelectorAll('.m-btn')) b.setAttribute('aria-pressed', String(b.dataset.m === (P3().metrica || 'qtd')));
+});
+if (location.hash === '#venda-por-dia') dash.setParams({aba: 'dia'});
+if (location.hash === '#estoque-por-loja') dash.setParams({aba: 'estoque'});
+for (const b of document.querySelectorAll('.m-btn')) b.addEventListener('click', () => dash.setParams({metrica: b.dataset.m}));
+for (const q of document.querySelectorAll('#q-dsku')) q.addEventListener('input', () => { dash.draw('dia-mx'); dash.draw('n-dsku'); });
+
+const WD = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+const dlab = (dt) => { const d = new Date(dt + 'T12:00:00Z'); return WD[d.getUTCDay()] + ' ' + d3.utcFormat('%d/%m')(d); };
+const porDia = () => {
+  const a = dash.data('dia_bw'), t = dash.data('dia_total');
+  if (a.status !== 'ok' || t.status !== 'ok') return null;
+  const p = P3();
+  const okPC = (r) => (!p.praca || r.praca === p.praca) && (!p.canal || r.canal === p.canal);
+  const m = new Map();
+  const get = (dt) => m.get(dt) || (m.set(dt, {dt, fat_total: 0, qtd_total: 0, fat_vig: 0, qtd_vig: 0, fat_bw: 0, qtd_bw: 0}), m.get(dt));
+  for (const r of t.data) if (okPC(r)) { const g = get(r.dt); g.fat_total += r.fat_total; g.qtd_total += r.qtd_total || 0; }
+  for (const r of a.data) if (okPC(r) && (!p.tabela || r.tabela === p.tabela)) { const g = get(r.dt); g.fat_vig += r.fat_vig; g.qtd_vig += r.qtd_vig; g.fat_bw += r.fat_bw; g.qtd_bw += r.qtd_bw; }
+  return [...m.values()].sort((x, y) => x.dt < y.dt ? -1 : 1).map((g) => ({...g, part: g.fat_total > 0 ? g.fat_vig / g.fat_total : null, part_un: g.qtd_total > 0 ? g.qtd_vig / g.qtd_total : null}));
+};
+
+dash.draw('dia-chart', (el) => {
+  el.replaceChildren();
+  const rows = porDia();
+  if (!rows || !rows.length) return;
+  const W = Math.max(el.clientWidth, 300), H = 250, m = {t: 24, r: 8, b: 30, l: 8};
+  const x = d3.scaleBand(rows.map((r) => r.dt), [m.l, W - m.r]).padding(0.3);
+  const y = d3.scaleLinear([0, (d3.max(rows, (r) => r.fat_vig) || 1) * 1.1], [H - m.b, m.t]);
+  const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).style('display', 'block');
+  svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', H - m.b).attr('y2', H - m.b).attr('stroke', 'var(--cds-chart-axis)');
+  const g = svg.selectAll('g.d').data(rows).join('g');
+  g.append('rect').attr('x', (r) => x(r.dt)).attr('width', x.bandwidth()).attr('y', (r) => y(r.fat_vig)).attr('height', (r) => H - m.b - y(r.fat_vig)).attr('fill', 'var(--bw-acc)').attr('rx', 3);
+  g.append('text').attr('x', (r) => x(r.dt) + x.bandwidth() / 2).attr('y', (r) => y(r.fat_vig) - 7).attr('text-anchor', 'middle').attr('fill', 'var(--color-fg)').style('font-size', 'var(--cds-font-size-caption)').text((r) => B3.pct(r.part));
+  g.append('text').attr('x', (r) => x(r.dt) + x.bandwidth() / 2).attr('y', H - 10).attr('text-anchor', 'middle').attr('fill', 'var(--color-fg-muted)').style('font-size', '10px').text((r) => dlab(r.dt));
+  const tip = d3.select(el).append('div').attr('class', 'tip').style('display', 'none');
+  g.on('mousemove', (ev, r) => {
+    const [px, py] = d3.pointer(ev, el);
+    tip.style('display', null).html('');
+    tip.append('div').attr('class', 't').text(dlab(r.dt));
+    tip.append('div').text('Itens BW ' + B3.brl(r.fat_vig) + ' · ' + B3.int(r.qtd_vig) + ' un.');
+    tip.append('div').text('Receita total ' + B3.brl(r.fat_total) + ' (' + B3.pct(r.part) + ' BW)');
+    const tw = tip.node().offsetWidth;
+    tip.style('left', Math.max(0, Math.min(px + 12, el.clientWidth - tw - 4)) + 'px').style('top', Math.max(0, py - 40) + 'px');
+  }).on('mouseleave', () => tip.style('display', 'none'));
+});
+
+dash.draw('dia-table', (el) => {
+  el.replaceChildren();
+  const rows = porDia();
+  if (!rows) return;
+  const tot = rows.reduce((a, r) => ({fat_total: a.fat_total + r.fat_total, fat_vig: a.fat_vig + r.fat_vig, qtd_vig: a.qtd_vig + r.qtd_vig, qtd_total: a.qtd_total + r.qtd_total}), {fat_total: 0, fat_vig: 0, qtd_vig: 0, qtd_total: 0});
+  const t = document.createElement('table'); t.className = 't'; t.id = 'tab-dia';
+  const hd = t.createTHead().insertRow();
+  const S = window.bwSorts['tab-dia'];
+  for (const [h, k, c] of [['Dia', 'dt', 'l'], ['Fat. total', 'fat_total'], ['Fat. BW', 'fat_vig'], ['% receita BW', 'part'], ['Un. BW', 'qtd_vig'], ['Un. total', 'qtd_total'], ['% un. BW', 'part_un']]) {
+    const th = document.createElement('th'); if (c) th.className = c; th.dataset.k = k;
+    th.setAttribute('aria-sort', S && S.k === k ? (S.dir > 0 ? 'ascending' : 'descending') : 'none');
+    const b = document.createElement('button'); b.textContent = h; th.append(b);
+    th.addEventListener('click', () => { B3.toggleSort('tab-dia', k, k === 'dt'); dash.draw('dia-table'); });
+    hd.append(th);
+  }
+  B3.sortBy('tab-dia', rows);
+  const tb = t.createTBody();
+  const row = (lab, r, bold) => { const tr = tb.insertRow(); for (const [v, c] of [[lab, 'l'], [B3.brl(r.fat_total)], [B3.brl(r.fat_vig)], [B3.pct(r.fat_total > 0 ? r.fat_vig / r.fat_total : null)], [B3.int(r.qtd_vig)], [B3.int(r.qtd_total)], [B3.pct(r.qtd_total > 0 ? r.qtd_vig / r.qtd_total : null)]]) { const td = tr.insertCell(); if (c) td.className = c; td.textContent = v; if (bold) td.style.fontWeight = '600'; } };
+  for (const r of rows) row(dlab(r.dt), r, false);
+  row('Total', tot, true);
+  el.append(t);
+});
+
+const skuDia = () => {
+  const a = dash.data('dia_sku'), s = dash.data('skus');
+  if (a.status !== 'ok' || s.status !== 'ok') return null;
+  const p = P3(), met = p.metrica || 'qtd';
+  const info = new Map(s.data.map((r) => [r.sku, r]));
+  const qi = document.querySelector('#q-dsku'), q = (qi ? qi.value : '').trim().toLowerCase();
+  const m = new Map(), dias = new Set();
+  for (const r of a.data) {
+    if ((p.praca && r.praca !== p.praca) || (p.canal && r.canal !== p.canal)) continue;
+    const inf = info.get(r.sku) || {};
+    if (p.tabela && inf.tabela !== p.tabela) continue;
+    dias.add(r.dt);
+    const g = m.get(r.sku) || (m.set(r.sku, {sku: r.sku, descricao: inf.descricao || '', versao_de: inf.versao_de || '', tabela: inf.tabela || '', status: inf.status || '', desc_pct: inf.desc_pct, d: {}, total: 0}), m.get(r.sku));
+    g.d[r.dt] = (g.d[r.dt] || 0) + r[met]; g.total += r[met];
+  }
+  let rows = [...m.values()];
+  if (q) rows = rows.filter((r) => (r.sku + ' ' + r.descricao + ' ' + r.versao_de).toLowerCase().includes(q));
+  rows.sort((x, y) => y.total - x.total);
+  return {rows, dias: [...dias].sort(), met};
+};
+window.bwSkuDia = skuDia;
+dash.draw('n-dsku', (el) => { const r = skuDia(); el.textContent = r ? B3.int(r.rows.length) : '—'; });
+dash.draw('dia-mx', (el) => {
+  el.replaceChildren();
+  const res = skuDia();
+  if (!res) return;
+  const {rows, dias, met} = res, f = met === 'fat' ? B3.brl : B3.int;
+  const t = document.createElement('table'); t.className = 't mx'; t.id = 'tab-mx';
+  const hd = t.createTHead().insertRow();
+  const heads = [['SKU', 'l', 'sku'], ['Descrição', 'wrapl', 'descricao'], ['Tabela', 'tl', 'tabela'], ['Status', 'tl', 'status'], ['Desconto', '', 'desc_pct']].concat(dias.map((d) => [dlab(d), '', 'd:' + d])).concat([['Total', '', 'total']]);
+  const S = window.bwSorts['tab-mx'];
+  for (const [h, c, k] of heads) {
+    const th = document.createElement('th'); if (c === 'l') th.className = 'l'; if (c === 'wrapl' || c === 'tl') th.style.textAlign = 'left';
+    th.dataset.k = k; th.setAttribute('aria-sort', S && S.k === k ? (S.dir > 0 ? 'ascending' : 'descending') : 'none');
+    const b = document.createElement('button'); b.textContent = h; th.append(b);
+    th.addEventListener('click', () => { B3.toggleSort('tab-mx', k, c !== ''); dash.draw('dia-mx'); });
+    hd.append(th);
+  }
+  B3.sortBy('tab-mx', rows, (r, k) => k.startsWith('d:') ? (r.d[k.slice(2)] || 0) : r[k]);
+  const tb = t.createTBody();
+  const frag = document.createDocumentFragment();
+  for (const r of rows) {
+    const tr = document.createElement('tr'); tr.dataset.key = r.sku;
+    const mx = Math.max(...dias.map((d) => r.d[d] || 0));
+    const cells = [[r.sku, 'l'], [r.descricao + (r.versao_de ? ' (versão de ' + r.versao_de + ')' : ''), 'wrap'], [r.tabela, 'tl'], [r.status, 'tl'], [B3.pct(r.desc_pct)]];
+    for (const [v, c] of cells) { const td = document.createElement('td'); if (c === 'l') td.className = 'l'; if (c === 'wrap') { td.className = 'wrap'; td.style.textAlign = 'left'; } if (c === 'tl') td.style.textAlign = 'left'; td.textContent = v; tr.append(td); }
+    for (const d of dias) {
+      const v = r.d[d] || 0, td = document.createElement('td'); td.className = 'd' + (v > 0 && v === mx ? ' hot' : '');
+      td.textContent = v ? f(v) : '·';
+      if (v > 0) td.style.background = 'color-mix(in srgb, var(--bw-acc) ' + Math.round(8 + 42 * v / (mx || 1)) + '%, transparent)';
+      tr.append(td);
+    }
+    const tt = document.createElement('td'); tt.style.fontWeight = '600'; tt.textContent = f(r.total); tr.append(tt);
+    frag.append(tr);
+  }
+  tb.append(frag);
+  el.append(t);
+});
+</script>
+
+<script>
+const B4 = window.bw;
+const P4 = () => dash.params();
+for (const s of document.querySelectorAll('#e-status')) s.addEventListener('change', () => dash.setParams({e_status: s.value || null}));
+for (const s of document.querySelectorAll('#e-sit')) s.addEventListener('change', () => dash.setParams({e_sit: s.value || null}));
+for (const q of document.querySelectorAll('#q-est')) q.addEventListener('input', () => { dash.draw('t-est'); dash.draw('n-est'); dash.draw('s-est'); });
+dash.draw('sel-loja', (sel) => {
+  const d = dash.data('lojas'), p = P4();
+  const ls = d.status === 'ok' ? d.data.filter((r) => (!p.praca || r.praca === p.praca) && (!p.canal || r.canal === p.canal)).sort((a, b) => a.loja.localeCompare(b.loja, 'pt-BR')) : [];
+  sel.replaceChildren(new Option('Todas as lojas', ''), ...ls.map((r) => new Option(r.loja + ' (' + r.bcps + ')', r.bcps)));
+  sel.value = p.loja ?? '';
+  sel.onchange = () => dash.setParams({loja: sel.value || null});
+});
+const estRows = () => {
+  const d = dash.data('estoque_calc');
+  if (d.status !== 'ok') return null;
+  const p = P4(), qi = document.querySelector('#q-est'), q = (qi ? qi.value : '').trim().toLowerCase();
+  return d.data.filter((r) => (!p.praca || r.praca === p.praca) && (!p.canal || r.canal === p.canal) && (!p.loja || r.bcps === p.loja) && (!p.tabela || r.tabela === p.tabela)
+    && (!p.e_status || (p.e_status === 'vig' ? r.status === 'Em vigência' : r.status !== 'Em vigência'))
+    && (!p.e_sit || (p.e_sit === 'zerado' ? r.qtd > 0 && r.est <= 0 : p.e_sit === 'semvenda' ? r.est > 0 && r.qtd === 0 : p.e_sit === 'sobra' ? r.est > 0 && (r.cob == null || r.cob > BWM.rest) : r.qtd > 0 && r.cob != null && r.cob < 10))
+    && (!q || (r.sku + ' ' + r.descricao).toLowerCase().includes(q)));
+};
+window.bwEstRows = estRows;
+dash.draw('n-est', (el) => { const r = estRows(); el.textContent = r ? B4.int(r.length) : '—'; });
+dash.draw('s-est', (el) => { const r = estRows(); el.textContent = r ? B4.int(r.reduce((a, x) => a + x.est, 0)) : '—'; });
+dash.draw('t-est', (tb) => {
+  tb.replaceChildren();
+  B4.ariaSort('tab-est');
+  let rows = estRows();
+  if (!rows) return;
+  if (!window.bwSorts['tab-est']) rows.sort((a, b) => b.est - a.est); else B4.sortBy('tab-est', rows);
+  rows = rows.slice(0, 500);
+  const frag = document.createDocumentFragment();
+  for (const r of rows) {
+    const tr = document.createElement('tr'); tr.dataset.key = encodeURIComponent(r.bcps) + ',' + encodeURIComponent(r.sku);
+    const cells = [[r.loja + ' (' + r.bcps + ')', 'l'], [r.praca, 'l'], [r.canal, 'l'], [r.sku, 'l'], [r.descricao, 'l wrap'], [r.tabela, 'l'], [r.status, 'l'], [B4.int(r.est)], [B4.int(r.qtd_hoje)], [B4.int(r.qtd)], [B4.pct(r.st)]];
+    for (const [v, c] of cells) { const td = document.createElement('td'); if (c) td.className = c; td.textContent = v; if (c === 'l wrap') td.style.textAlign = 'left'; tr.append(td); }
+    const tc = document.createElement('td'); const sp = document.createElement('span'); sp.className = B4.cobClass(r.cob); sp.textContent = r.est <= 0 && r.qtd > 0 ? 'zerado' : B4.dias(r.cob); tc.append(sp); tr.append(tc);
+    frag.append(tr);
+  }
+  tb.append(frag);
+});
+</script>
+
+<script>
+const B5 = window.bw;
+for (const btn of document.querySelectorAll('#copy-dsku')) {
+  btn.addEventListener('click', () => {
+    const res = window.bwSkuDia ? window.bwSkuDia() : null;
+    if (!res) return;
+    const {rows, dias, met} = res;
+    if (window.bwSorts['tab-mx']) B5.sortBy('tab-mx', rows, (r, k) => k.startsWith('d:') ? (r.d[k.slice(2)] || 0) : r[k]);
+    const num = (v) => met === 'fat' ? (Math.round((v || 0) * 100) / 100).toString().replace('.', ',') : String(v || 0);
+    const clean = (s) => String(s ?? '').replace(/[\t\n\r]/g, ' ');
+    const head = ['SKU', 'Descrição', 'Versão de', 'Tabela', 'Status', 'Desconto'].concat(dias.map((d) => (met === 'fat' ? 'Fat. ' : 'Un. ') + d.slice(8, 10) + '/' + d.slice(5, 7))).concat([met === 'fat' ? 'Fat. total' : 'Un. total']);
+    const lines = [head.join('\t')].concat(rows.map((r) => [clean(r.sku), clean(r.descricao), clean(r.versao_de), clean(r.tabela), clean(r.status), r.desc_pct == null ? '' : (Math.round(r.desc_pct * 1000) / 10).toString().replace('.', ',') + '%'].concat(dias.map((d) => num(r.d[d]))).concat([num(r.total)]).join('\t')));
+    const txt = lines.join('\n');
+    const ok = document.querySelector('#copy-ok'), fail = document.querySelector('#copy-fail'), area = document.querySelector('#copy-area');
+    const showFail = () => { if (ok) ok.hidden = true; if (fail) fail.hidden = false; if (area) { area.value = txt; area.hidden = false; area.focus(); area.select(); } };
+    try {
+      navigator.clipboard.writeText(txt).then(() => { if (ok) ok.hidden = false; if (fail) fail.hidden = true; if (area) area.hidden = true; }, showFail);
+    } catch (e) { showFail(); }
+  });
+}
+</script>
+
+<script>
+const B6 = window.bw;
+window.bwEstRows = window.bwEstRows || null;
+for (const btn of document.querySelectorAll('#copy-est')) {
+  btn.addEventListener('click', () => {
+    const rows = window.bwEstRows ? window.bwEstRows() : null;
+    if (!rows) return;
+    if (window.bwSorts['tab-est']) B6.sortBy('tab-est', rows); else rows.sort((a, b) => b.est - a.est);
+    const clean = (s) => String(s ?? '').replace(/[\t\n\r]/g, ' ');
+    const dec = (v) => v == null ? '' : (Math.round(v * 1000) / 10).toString().replace('.', ',') + '%';
+    const cob = (r) => r.est <= 0 && r.qtd > 0 ? 'zerado' : r.cob == null ? 'sem venda' : String(Math.round(r.cob));
+    const head = ['Cód. loja', 'Loja', 'Praça', 'Canal', 'SKU', 'Descrição', 'Tabela', 'Status', 'Estoque un.', 'Vendeu hoje', 'Vendeu no período', 'Giro', 'Cobertura (dias)'];
+    const lines = [head.join('\t')].concat(rows.map((r) => [clean(r.bcps), clean(r.loja), clean(r.praca), clean(r.canal), clean(r.sku), clean(r.descricao), clean(r.tabela), clean(r.status), r.est, r.qtd_hoje, r.qtd, dec(r.st), cob(r)].join('\t')));
+    const txt = lines.join('\n');
+    const ok = document.querySelector('#copy-est-ok'), fail = document.querySelector('#copy-est-fail'), area = document.querySelector('#copy-est-area');
+    const showFail = () => { if (ok) ok.hidden = true; if (fail) fail.hidden = false; if (area) { area.value = txt; area.hidden = false; area.focus(); area.select(); } };
+    try {
+      navigator.clipboard.writeText(txt).then(() => { if (ok) ok.hidden = false; if (fail) fail.hidden = true; if (area) area.hidden = true; }, showFail);
+    } catch (e) { showFail(); }
+  });
+}
+</script>
+
+<script>
+const B7 = window.bw;
+dash.draw('pot', (el) => {
+  const d = dash.data('praca_pot');
+  el.replaceChildren();
+  if (d.status !== 'ok') return;
+  const rows = d.data.map((r) => ({...r, conv: r.fat_bw_vig / (r.fat_bw_vig + r.pot)})).sort((a, b) => (b.pot + b.fat_bw_vig) - (a.pot + a.fat_bw_vig));
+  const W = Math.max(el.clientWidth, 300), rh = 30, top = 4, H = top + rows.length * rh + 6;
+  const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).style('display', 'block');
+  const labs = svg.append('g').selectAll('text').data(rows).join('text').attr('x', 0).attr('y', (r, i) => top + i * rh + rh / 2 + 4).attr('fill', 'var(--color-fg)').style('font-size', 'var(--cds-font-size-caption)').text((r) => r.praca);
+  let lw = 0; labs.each(function () { lw = Math.max(lw, this.getComputedTextLength()); }); lw += 10;
+  const ends = svg.append('g').selectAll('text').data(rows).join('text').attr('y', (r, i) => top + i * rh + rh / 2 + 4).attr('text-anchor', 'end').attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)').text((r) => B7.brlc(r.fat_bw_vig) + ' · ' + B7.brlc(r.pot) + ' · ' + B7.pct(r.conv));
+  let rw = 0; ends.each(function () { rw = Math.max(rw, this.getComputedTextLength()); }); ends.attr('x', W);
+  const x = d3.scaleLinear([0, d3.max(rows, (r) => r.fat_bw_vig + r.pot)], [lw, W - rw - 10]);
+  const g = svg.selectAll('g.r').data(rows).join('g').attr('class', 'r');
+  g.append('rect').attr('x', lw).attr('y', (r, i) => top + i * rh + 6).attr('height', rh - 12).attr('width', (r) => Math.max(1, x(r.fat_bw_vig) - lw)).attr('fill', 'var(--bw-acc)').attr('rx', 2);
+  g.append('rect').attr('x', (r) => x(r.fat_bw_vig)).attr('y', (r, i) => top + i * rh + 6).attr('height', rh - 12).attr('width', (r) => Math.max(1, x(r.fat_bw_vig + r.pot) - x(r.fat_bw_vig))).attr('fill', 'var(--cds-chart-muted)').attr('rx', 2);
+  const tip = d3.select(el).append('div').attr('class', 'tip').style('display', 'none');
+  g.on('mousemove', (ev, r) => {
+    const [px, py] = d3.pointer(ev, el);
+    tip.style('display', null).html('');
+    tip.append('div').attr('class', 't').text(r.praca);
+    tip.append('div').text('Realizado BW ' + B7.brl(r.fat_bw_vig) + ' (' + B7.pct(r.fat_bw_vig / r.fat_total) + ' da receita)');
+    tip.append('div').text('Potencial em estoque ' + B7.brl(r.pot) + ' · ' + B7.int(r.est) + ' un.');
+    tip.append('div').text('Já em desconto ' + B7.brl(r.pot_vig) + ' · entra até 26/11 ' + B7.brl(r.pot_fut));
+    tip.append('div').text(B7.pct(r.conv) + ' do total já convertido em venda');
+    const tw = tip.node().offsetWidth;
+    tip.style('left', Math.max(0, Math.min(px + 12, el.clientWidth - tw - 4)) + 'px').style('top', Math.max(0, py - 60) + 'px');
+  }).on('mouseleave', () => tip.style('display', 'none'));
+});
+</script>
+
+<script>
+const B8 = window.bw;
+dash.draw('pot-tot', (el) => {
+  const d = dash.data('pot_total');
+  if (d.status !== 'ok') { el.textContent = '—'; return; }
+  const r = d.data[0], f = el.dataset.field;
+  el.textContent = f === 'conv' ? B8.pct(r[f]) : B8.brlc(r[f]);
+});
+</script>
+
+</div>
+</body></html>

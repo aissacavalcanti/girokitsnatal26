@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atualizar Tracking BW</title>
+<style>
+:root{--bg:#f7f7f4;--card:#fff;--fg:#1f2421;--muted:#68706b;--line:#dcdfda;--acc:#2f7d6d;--warn:#b5672a;--bad:#c0504d;--good:#2f7d6d}
+@media (prefers-color-scheme: dark){:root{--bg:#171a18;--card:#202421;--fg:#e9ece8;--muted:#a3aaa5;--line:#353a36;--acc:#5fb39f;--warn:#e0a060;--bad:#e07a76;--good:#5fb39f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;font-size:14px;line-height:1.45}
+main{max-width:880px;margin:0 auto;padding:28px 16px 60px}
+h1{font-size:24px;margin:0 0 4px}
+h2{font-size:16px;margin:0 0 10px;display:flex;gap:10px;align-items:center}
+.n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--acc);color:#fff;font-size:13px;flex:none}
+.sub{color:var(--muted);margin:0 0 22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:16px}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:26px;text-align:center;color:var(--muted);cursor:pointer}
+.drop.on{border-color:var(--acc);color:var(--fg)}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600}
+.btn{all:unset;cursor:pointer;background:var(--acc);color:#fff;padding:9px 16px;border-radius:8px;font-weight:600;display:inline-block;margin:4px 8px 4px 0}
+.btn.sec{background:transparent;color:var(--acc);border:1px solid var(--acc)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:8px 0 14px}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:10px}
+.kpi b{display:block;font-size:20px}
+.kpi span{color:var(--muted);font-size:12px}
+.msg{padding:10px 12px;border-radius:8px;margin:10px 0;font-size:13px}
+.msg.warn{background:color-mix(in srgb,var(--warn) 14%,transparent);border:1px solid var(--warn)}
+.msg.bad{background:color-mix(in srgb,var(--bad) 14%,transparent);border:1px solid var(--bad)}
+.msg.ok{background:color-mix(in srgb,var(--good) 12%,transparent);border:1px solid var(--good)}
+label{display:block;margin:12px 0 4px;font-weight:600}
+input[type=number]{width:90px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--fg);font:inherit}
+.muted{color:var(--muted)}
+ol{padding-left:20px;margin:6px 0}
+li{margin:4px 0}
+a{color:var(--acc)}
+</style>
+</head>
+<body>
+<main>
+  <h1>Atualizar o Tracking BW</h1>
+  <p class="sub">Tudo roda aqui no seu navegador: os arquivos não saem do seu computador. <a href="index.html">Voltar ao dashboard</a></p>
+
+  <div class="card" id="estado"><span class="muted">Carregando a base atual…</span></div>
+
+  <div class="card">
+    <h2><span class="n">1</span>Escolha os arquivos do dia</h2>
+    <p class="muted" style="margin-top:0">O relatório ABC de venda (com loja e data) e o saldo de estoque, do jeito que você baixa. Pode mandar mais de um relatório de venda: para cada dia e loja vale o arquivo mais recente.</p>
+    <div class="drop" id="drop">Arraste os CSVs aqui ou <u>clique para escolher</u></div>
+    <input type="file" id="files" accept=".csv,text/csv" multiple hidden>
+    <div id="lista"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">2</span>Confira e calcule</h2>
+    <label for="frac">Quanto do último dia já foi vendido (0,1 a 1)</label>
+    <input type="number" id="frac" min="0.1" max="1" step="0.1" value="1">
+    <span class="muted" id="fracdica"></span>
+    <p class="muted" style="margin:6px 0 12px">Usado só na cobertura (dias de estoque). Preenchido pelo horário do relatório; dia fechado = 1.</p>
+    <span class="btn" id="calc" disabled>Calcular</span>
+    <div id="resultado"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">3</span>Publique</h2>
+    <span class="btn sec" id="previa" disabled>Ver prévia do dashboard</span>
+    <span class="btn" id="zip" disabled>Baixar pacote para o GitHub (.zip)</span>
+    <span class="btn sec" id="teams" disabled>Baixar dashboard para o Teams (.html)</span>
+    <p style="margin:14px 0 4px"><b>Para atualizar o site:</b></p>
+    <ol>
+      <li>Descompacte o .zip baixado.</li>
+      <li>No GitHub, abra o repositório <b>trackingBW</b> e clique em <b>Add file → Upload files</b>.</li>
+      <li>Arraste <b>todos</b> os arquivos da pasta descompactada (inclusive <code>base_vendas.json</code>, que guarda o histórico para a próxima atualização).</li>
+      <li>Clique em <b>Commit changes</b>. Em 1 a 2 minutos o link já mostra os dados novos.</li>
+    </ol>
+    <p class="muted">O arquivo do Teams é o mesmo dashboard com os dados dentro, para quem abre sem internet.</p>
+  </div>
+
+  <div class="card muted" style="font-size:13px">
+    <b style="color:var(--fg)">O que esta página não faz</b> (peça ao Claude quando precisar): incluir itens novos na tabela BW ou novos códigos de versão,
+    mudar datas de vigência, gerar as planilhas em Excel e a sugestão de transferência, e atualizar o dashboard dentro do Claude.
+  </div>
+</main>
+
+<script src="jszip.min.js"></script>
+<script src="bw_engine.js"></script>
+<script>
+(function(){
+  const $=(id)=>document.getElementById(id);
+  const fmtR=(v)=>'R$ '+(v>=1e6?(v/1e6).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mi':Math.round(v).toLocaleString('pt-BR'));
+  const fmtP=(v)=>(v*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
+  const fmtN=(v)=>Math.round(v).toLocaleString('pt-BR');
+  let REF=null, BASE=null, META=null, arquivos=[], RES=null;
+
+  // base atual do site
+  Promise.all(['ref.json','base_vendas.json','dados_meta.json'].map((f)=>fetch(f,{cache:'no-cache'}).then((r)=>{ if(!r.ok) throw new Error(f+' ('+r.status+')'); return r.json(); })))
+    .then(([r,b,m])=>{ REF=r; BASE=b; META=m[0];
+      const dts=[...new Set(b.tot.dt)].sort();
+      $('estado').innerHTML='<b>Base atual no site:</b> vendas de '+BWEngine.ddmm(dts[0])+' a '+BWEngine.ddmm(dts[dts.length-1])+
+        (META.parcial&&META.hora?' ('+META.ultima+' até '+META.hora+')':'')+' · estoque de '+META.estoque+' · '+b.tot.dt.length.toLocaleString('pt-BR')+' combinações de loja e dia.';
+      habilitar();
+    })
+    .catch((e)=>{ $('estado').innerHTML='<div class="msg bad">Não consegui ler a base do site ('+e.message+'). Abra esta página pelo link do GitHub Pages, não pelo arquivo no computador.</div>'; });
+
+  // arquivos
+  const drop=$('drop'), inp=$('files');
+  drop.onclick=()=>inp.click();
+  drop.ondragover=(e)=>{ e.preventDefault(); drop.classList.add('on'); };
+  drop.ondragleave=()=>drop.classList.remove('on');
+  drop.ondrop=(e)=>{ e.preventDefault(); drop.classList.remove('on'); ler([...e.dataTransfer.files]); };
+  inp.onchange=()=>{ ler([...inp.files]); inp.value=''; };
+
+  const carimbo=(nome)=>{ const m=/(\d{4})-(\d{2})-(\d{2})T(\d{2})(\d{2})/.exec(nome); return m?{iso:m[1]+'-'+m[2]+'-'+m[3],h:+m[4],min:+m[5],ord:m[1]+m[2]+m[3]+m[4]+m[5]}:null; };
+  const dataEstoque=(nome)=>{ const m=/(\d{2})-(\d{2})-(\d{4})/.exec(nome); return m?m[3]+'-'+m[2]+'-'+m[1]:null; };
+
+  function ler(files){
+    Promise.all(files.map((f)=>f.arrayBuffer().then((buf)=>{
+      const txt=new TextDecoder('windows-1252').decode(buf);
+      const first=txt.slice(0,400);
+      const item={nome:f.name,mod:f.lastModified};
+      try{
+        if(/Quebra2/i.test(first)){ item.tipo='venda'; item.linhas=BWEngine.parseVendas(txt); item.ts=carimbo(f.name); }
+        else if(/Estoque/i.test(first)){ item.tipo='estoque'; item.linhas=BWEngine.parseEstoque(txt); item.data=dataEstoque(f.name); }
+        else { item.tipo='?'; item.erro='Não reconheci: não é o ABC de venda (com Quebra2) nem o saldo de estoque.'; }
+      }catch(e){ item.tipo='?'; item.erro=e.message; }
+      return item;
+    }))).then((novos)=>{
+      novos.forEach((n)=>{ arquivos=arquivos.filter((a)=>a.nome!==n.nome); arquivos.push(n); });
+      RES=null; desenhaLista(); habilitar(); $('resultado').innerHTML='';
+    });
+  }
+
+  function desenhaLista(){
+    if(!arquivos.length){ $('lista').innerHTML=''; return; }
+    let h='<table><tr><th>Arquivo</th><th>Tipo</th><th>Conteúdo</th><th></th></tr>';
+    arquivos.forEach((a,i)=>{
+      let c='';
+      if(a.erro) c='<span style="color:var(--bad)">'+a.erro+'</span>';
+      else if(a.tipo==='venda'){
+        const pd=new Map(); a.linhas.forEach((r)=>{ if(!pd.has(r.dt)) pd.set(r.dt,new Set()); pd.get(r.dt).add(r.bcps); });
+        c=[...pd.keys()].sort().map((d)=>BWEngine.ddmm(d)+': '+pd.get(d).size+' lojas').join(' · ')+(a.ts?' <span class="muted">(gerado '+BWEngine.ddmm(a.ts.iso)+' '+String(a.ts.h).padStart(2,'0')+'h'+String(a.ts.min).padStart(2,'0')+')</span>':'');
+      } else c=new Set(a.linhas.map((r)=>r.bcps)).size+' lojas, '+fmtN(a.linhas.length)+' linhas'+(a.data?' · posição de '+BWEngine.ddmm(a.data):'');
+      h+='<tr><td>'+a.nome+'</td><td>'+(a.tipo==='venda'?'Venda':a.tipo==='estoque'?'Estoque':'—')+'</td><td>'+c+'</td><td><a href="#" data-rm="'+i+'">remover</a></td></tr>';
+    });
+    $('lista').innerHTML=h+'</table>';
+    $('lista').querySelectorAll('[data-rm]').forEach((el)=>el.onclick=(e)=>{ e.preventDefault(); arquivos.splice(+el.dataset.rm,1); RES=null; desenhaLista(); habilitar(); });
+    // fração sugerida pelo relatório mais recente
+    const vs=vendas(); const ult=vs[vs.length-1];
+    if(ult&&ult.ts){
+      const maxDt=ult.linhas.reduce((m,r)=>r.dt>m?r.dt:m,'');
+      if(ult.ts.iso===maxDt){ const h=ult.ts.h+ult.ts.min/60; const f=Math.min(1,Math.max(0.1,Math.round((h-7.5)/12*10)/10)); $('frac').value=f; $('fracdica').textContent=' relatório de '+String(ult.ts.h).padStart(2,'0')+'h'+String(ult.ts.min).padStart(2,'0'); }
+      else { $('frac').value=1; $('fracdica').textContent=' último dia já fechado'; }
+    }
+  }
+  const vendas=()=>arquivos.filter((a)=>a.tipo==='venda').sort((a,b)=>((a.ts&&a.ts.ord)||String(a.mod)).localeCompare((b.ts&&b.ts.ord)||String(b.mod)));
+  const estoque=()=>arquivos.filter((a)=>a.tipo==='estoque').sort((a,b)=>a.mod-b.mod).pop();
+  function habilitar(){
+    const ok=REF&&BASE&&vendas().length&&estoque();
+    $('calc').toggleAttribute('disabled',!ok);
+    ['previa','zip','teams'].forEach((id)=>$(id).toggleAttribute('disabled',!RES));
+  }
+
+  // cálculo
+  $('calc').onclick=()=>{
+    $('resultado').innerHTML='<p class="muted">Calculando…</p>';
+    setTimeout(()=>{
+      try{
+        const vs=vendas(), est=estoque();
+        const stk=new Set(est.linhas.map((r)=>r.sku));
+        const bwset=new Set([...REF.agg.map((a)=>a.sku),...Object.keys(REF.alias)]);
+        const nb=BWEngine.mergeBase(BASE,vs.map((a)=>a.linhas),(s)=>bwset.has(s)||stk.has(s));
+        const dts=[...new Set(nb.tot.dt)].sort(); const hoje=dts[dts.length-1];
+        const frac=Math.min(1,Math.max(0.1,parseFloat(String($('frac').value).replace(',','.'))||1));
+        const ult=vs[vs.length-1];
+        const hora=(ult.ts&&ult.ts.iso===hoje&&frac<1)?String(ult.ts.h).padStart(2,'0')+'h'+String(ult.ts.min).padStart(2,'0'):'';
+        const out=BWEngine.compute(REF,nb,est.linhas,{hoje,frac,hora,estoqueData:est.data||hoje});
+        RES={out,base:{det:nb.det,tot:nb.tot,nomes:nb.nomes},hoje};
+        // avisos
+        const avisos=[];
+        const baseDts=new Set(BASE.tot.dt); const novosDts=new Set(nb.novas.map((k)=>k.split('|')[0]));
+        let d=dts[0]; const faltam=[];
+        while(d<=hoje){ if(!baseDts.has(d)&&!novosDts.has(d)) faltam.push(BWEngine.ddmm(d)); d=BWEngine.addDays(d,1); }
+        if(faltam.length) avisos.push(['bad','Faltam dias sem nenhuma venda na base: '+faltam.join(', ')+'. Baixe o relatório que cobre esses dias e inclua aqui.']);
+        const lojasHoje=new Set(nb.tot.dt.map((x,i)=>x===hoje?nb.tot.bcps[i]:null).filter(Boolean)).size;
+        const lojasOntem=new Set(nb.tot.dt.map((x,i)=>x===BWEngine.addDays(hoje,-1)?nb.tot.bcps[i]:null).filter(Boolean)).size;
+        if(lojasOntem&&lojasHoje<lojasOntem-5) avisos.push(['warn',BWEngine.ddmm(hoje)+' tem venda de '+lojasHoje+' lojas (o dia anterior teve '+lojasOntem+'). Normal se o relatório foi tirado cedo.']);
+        if(est.data&&est.data<hoje) avisos.push(['warn','O estoque é de '+BWEngine.ddmm(est.data)+', anterior à última venda ('+BWEngine.ddmm(hoje)+'). Giro e cobertura ficam um pouco distorcidos.']);
+        // resumo
+        const s=(arr,f)=>arr.reduce((a,r)=>a+(r[f]||0),0);
+        const ft=s(out.dia_total,'fat_total'), fb=s(out.dia_bw,'fat_vig'), qt=s(out.dia_total,'qtd_total'), qb=s(out.dia_bw,'qtd_vig');
+        const fth=s(out.dia_total.filter((r)=>r.dt===hoje),'fat_total'), fbh=s(out.dia_bw.filter((r)=>r.dt===hoje),'fat_vig');
+        const pot=out.praca_pot.reduce((a,r)=>a+(r.pot||0),0);
+        let h=avisos.map(([c,t])=>'<div class="msg '+c+'">'+t+'</div>').join('');
+        h+='<div class="msg ok">Pronto. '+nb.novas.length+' combinações de loja e dia entraram ou foram substituídas. Último dia: '+BWEngine.ddmm(hoje)+(hora?' até '+hora:'')+' · '+out.meta[0].dias.toLocaleString('pt-BR')+' dias de venda · faltam '+out.meta[0].rest+' dias de BW.</div>';
+        h+='<div class="kpis">'+
+          '<div class="kpi"><b>'+fmtR(ft)+'</b><span>Faturamento total</span></div>'+
+          '<div class="kpi"><b>'+fmtR(fb)+'</b><span>Faturamento BW ('+fmtP(fb/ft)+')</span></div>'+
+          '<div class="kpi"><b>'+fmtP(qb/qt)+'</b><span>Unidades BW</span></div>'+
+          '<div class="kpi"><b>'+fmtR(fbh)+'</b><span>BW em '+BWEngine.ddmm(hoje)+' ('+(fth?fmtP(fbh/fth):'—')+')</span></div>'+
+          '<div class="kpi"><b>'+fmtP(fb/(fb+pot))+'</b><span>Potencial já convertido</span></div></div>';
+        $('resultado').innerHTML=h;
+      }catch(e){ console.error(e); RES=null; $('resultado').innerHTML='<div class="msg bad">Erro no cálculo: '+e.message+'</div>'; }
+      habilitar();
+    },30);
+  };
+
+  // saídas
+  const NAMES=['lojas','lojas_dia','praca_canal','diario','skus','marcas','fora_tabela','dia_total','dia_bw','dia_sku','estoque','praca_pot'];
+  const baixar=(blob,nome)=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=nome; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },2000); };
+  const stamp=()=>RES.hoje.slice(8,10)+'-'+RES.hoje.slice(5,7)+(RES.out.meta[0].hora?'_'+RES.out.meta[0].hora:'');
+  let teamsCache=null;
+  async function teamsHtml(){
+    if(teamsCache&&teamsCache.res===RES) return teamsCache.html;
+    const [page,d3]=await Promise.all(['index.html','d3.min.js'].map((f)=>fetch(f,{cache:'no-cache'}).then((r)=>r.text())));
+    const inline={}; NAMES.forEach((n)=>{ inline[n]=RES.out[n]; }); inline.meta=RES.out.meta;
+    const blob=JSON.stringify(inline).replace(/<\//g,'<\\/');
+    const SC='<'+'/script>';
+    let html=page.replace('<script src="d3.min.js">'+SC,()=>'<script>'+d3+SC);
+    html=html.replace('<div id="dash-root">',()=>'<div id="dash-root">\n<script>window.BW_INLINE='+blob+';'+SC);
+    teamsCache={res:RES,html}; return html;
+  }
+  $('previa').onclick=async()=>{ const w=window.open('','_blank'); const html=await teamsHtml(); const url=URL.createObjectURL(new Blob([html],{type:'text/html'})); if(w) w.location=url; else location.href=url; };
+  $('teams').onclick=async()=>{ baixar(new Blob([await teamsHtml()],{type:'text/html'}),'Tracking_BW_2026_dashboard.html'); };
+  $('zip').onclick=async()=>{
+    $('zip').textContent='Gerando…';
+    const z=new JSZip();
+    NAMES.forEach((n)=>z.file('dados_'+n+'.json',JSON.stringify(RES.out[n])));
+    z.file('dados_meta.json',JSON.stringify(RES.out.meta));
+    z.file('base_vendas.json',JSON.stringify(RES.base));
+    const blob=await z.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
+    baixar(blob,'trackingBW_dados_'+stamp()+'.zip');
+    $('zip').textContent='Baixar pacote para o GitHub (.zip)';
+  };
+})();
+</script>
+</body>
+</html>
